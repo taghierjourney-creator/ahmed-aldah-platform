@@ -1,0 +1,10 @@
+{
+  "Home": {
+    "title": "منصة أحمد الضاح",
+    "description": "مرحبًا بكم في المنصة المعرفية.",
+    "localeLabel": "اللغة الحالية: {locale}"
+  },
+  "LocaleSwitcher": {
+    "label": "تغيير اللغة"
+  }
+}

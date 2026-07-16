@@ -1,0 +1,441 @@
+# Ahmed Al-Dah Platform — Engineering Specification
+### v4.1 — Structural Reorganization Edition
+
+**Supersedes (structurally, not substantively):** v4.0, Reviewed Edition
+**Baseline content owner:** v4.0 Reviewed Edition + its referenced architectural review (`srs-architectural-review.md`)
+
+> **What this revision is, and is not.** This edition reorganizes v4.0 into requirement categories (business / functional / non-functional / architecture / data / security / process), assigns traceable requirement IDs, and makes several assumptions explicit that were previously implicit. **No scope, phase order, technology choice, or business decision has been changed.** Every requirement below traces back to a section of v4.0; where the original section number and/or review-finding tag (C-#/H-#/M-#/L-#) is known, it's cited in parentheses. A full list of what was reorganized and why is in **Appendix A**, so this document can stay clean for day-to-day implementation use rather than carrying inline editorial commentary throughout.
+
+---
+
+## Table of Contents
+0. [How to Use This Specification](#0-how-to-use-this-specification)
+1. [Business Requirements (BR)](#1-business-requirements-br)
+2. [Delivery Roadmap & Phasing](#2-delivery-roadmap--phasing)
+3. [Functional Requirements (FR)](#3-functional-requirements-fr)
+4. [Non-Functional Requirements (NFR)](#4-non-functional-requirements-nfr)
+5. [Technical Architecture Decisions (ARCH)](#5-technical-architecture-decisions-arch)
+6. [Data Model Requirements (DM)](#6-data-model-requirements-dm)
+7. [Security Requirements (SEC)](#7-security-requirements-sec)
+8. [Development Rules & Engineering Discipline (DEV)](#8-development-rules--engineering-discipline-dev)
+9. [Role & Permission Summary](#9-role--permission-summary)
+10. [Explicit Assumptions (ASM)](#10-explicit-assumptions-asm)
+11. [Out-of-Scope / YAGNI Register](#11-out-of-scope--yagni-register)
+12. [Future Considerations](#12-future-considerations)
+13. [Definition of Done — Per Phase](#13-definition-of-done--per-phase)
+14. [Glossary](#14-glossary)
+- [Appendix A — Editorial Change Log](#appendix-a--editorial-change-log)
+- [Appendix B — Open Questions Requiring Stakeholder Input](#appendix-b--open-questions-requiring-stakeholder-input)
+
+---
+
+## 0. How to Use This Specification
+
+This is the source of truth for scope and standards — it is a **20-year roadmap**, not a one-week build list.
+
+- Feed **one phase at a time** to a human or AI implementer (see §2). Do not paste this whole document into an AI coding tool expecting a one-shot build.
+- Before starting a new feature, search the existing codebase first (§8, DEV-MAINT) — don't recreate components or utilities that already exist.
+- Request a **written plan before code** for anything touching the database schema, auth, or Server Actions (SEC-AUTHZ-5, ARCH-14).
+- Treat §13 (**Definition of Done**) as the actual acceptance bar per phase — not the aspirational language elsewhere in this document.
+- Requirement IDs (`BR-#`, `FR-<module>-#`, `NFR-<category>-#`, `ARCH-#`, `DM-#`, `SEC-<area>-#`, `DEV-<area>`) exist so a requirement can be referenced precisely in a commit, PR, or AI-agent prompt instead of "the search section."
+
+**Conflict resolution order**, unchanged from v4.0: correctness → security → current-phase scope → data portability for future phases → visual polish. Day-to-day implementation trade-offs not obviously covered by that list are refined by: Correctness → Security → Data Integrity → Maintainability → Simplicity (KISS) → Scalability → Extensibility → Performance → Developer Experience → Visual/UI.
+
+---
+
+## 1. Business Requirements (BR)
+
+| ID | Requirement |
+| :-- | :-- |
+| BR-1 | One codebase, one database, one admin panel serve two public-facing brands: **Knowledge Hub** (`/`, personal archive — articles, research, books, translations, lectures, CV) and **Office** (`/office`, Ahmed Al-Dah Consulting & Research — services, studies, team, projects, client portal). |
+| BR-2 | Arabic is the **primary and default** content language of both brands. English and French are secondary, added only as content exists in them. No part of the system may assume Latin-script content is the default case (routing, fallback logic, sorting, etc.). |
+| BR-3 | Three user populations are structurally distinct from Phase 0 onward, even though only the first exists until later phases: **(a)** internal staff (Admin/Editor/Moderator), **(b)** public/anonymous content consumers plus commenting `User` accounts (Phase 2), **(c)** authenticated Office clients, `Client` role (Phase 3a). |
+| BR-4 | The platform is planned on a 20-year horizon (see ASM-1). This is the business justification for deciding certain schema *shapes* early (e.g. `translationGroupId`, the full `Client` role) even where the corresponding feature isn't built yet — see §3 Guiding Principle in v4.0 and the YAGNI Register (§11). |
+| BR-5 | Office organizational contact: **Phone** +222 22228131 · **Email** ahmed.eddaht@gmail.com. |
+
+---
+
+## 2. Delivery Roadmap & Phasing
+
+Each phase ships to production and must be usable on its own before the next phase begins.
+
+| Phase | Goal | Explicitly NOT included this phase |
+| :-- | :-- | :-- |
+| **P0 — Foundation** | Next.js + TS strict setup; Postgres/Prisma with Supavisor pooling (ARCH-2); Auth.js with basic roles incl. the full `Client` role definition though unused; CI/CD to Vercel with isolated preview DB (ARCH-15); dependency scanning (ARCH-10); i18n + RTL routing skeleton with `translationGroupId` reserved on content tables (DM-4); design tokens (light/dark, AR/EN/FR typography) | Any content features |
+| **P1 — Knowledge Hub MVP** | Articles/Posts CMS, categories/tags, Postgres FTS with Arabic diacritic normalization validated against real content (FR-SEARCH-2); responsive RTL-correct reading UI; basic SEO/meta; dark/light mode; error tracking wired in (ARCH-8) | Client portal, advanced search engine, video, PWA, comments (→ P2) |
+| **P2 — Office Identity** | `/office` branding; services/team/projects pages; simple contact & consultation-request form (email notification only, no workflow yet — FR-CLIENT-2); `Comment` entity with an actual moderation queue for the Moderator role (FR-COMMENT-1) | File uploads, ticket tracking |
+| **P3a — Client Portal Core** | Authenticated client portal (`Client` role); secure file uploads; request status tracking with email notifications on status change (FR-NOTIF-2); Admin MFA required before this phase ships (SEC-AUTHZ-3) | Rich editor upgrades, version history |
+| **P3b — Rich Content Authoring** | Rich editor (math, embeds — sanitized against a named allow-list, SEC-GEN-2); draft/version history with one-click restore, scoped per locale row | Client-portal features (belongs to P3a) |
+| **P4 — Scale & Polish** | PWA/offline reading; dedicated search engine only if triggered (FR-SEARCH-3); analytics dashboard; audit logs with before/after snapshots; automated-backup restore drills; redirect table (301 only); structured data | New content types |
+| **P5 — Optional / Future** | E-commerce, courses (LMS), forums, podcasts, native mobile app consuming a dedicated versioned REST API | Not built now — see §11 and §12 for how the data model stays compatible without building any of it early |
+
+**Note on P3 split:** the original single Phase 3 was split into 3a/3b because client-portal work and CMS-authoring work are different domains (§5/ARCH's own domain separation) that don't share a natural Definition-of-Done gate.
+
+---
+
+## 3. Functional Requirements (FR)
+
+### 3.1 Internationalization & RTL — `FR-I18N`
+| ID | Requirement |
+| :-- | :-- |
+| FR-I18N-1 | Locale routing: `ar` default/unprefixed, `en` at `/en/...`, `fr` at `/fr/...`, via `next-intl` or equivalent, from Phase 0. |
+| FR-I18N-2 | `en` and `fr` are reserved slugs and cannot be used as content slugs. |
+| FR-I18N-3 | Root/unprefixed routes always serve Arabic regardless of the visitor's `Accept-Language` header. Locale switching is an explicit user action only — never an automatic header-based redirect (avoids CDN cache-variance and inconsistent crawling). |
+| FR-I18N-4 | `dir` is set dynamically per locale (`rtl` for `ar`, `ltr` for `en`/`fr`); all layout CSS uses logical properties (`margin-inline-start`, `padding-inline-end`, `inset-inline-*`), never physical left/right. |
+| FR-I18N-5 | Directional icons (arrows, chevrons, next/previous) flip automatically based on `dir`. |
+| FR-I18N-6 | The Admin Dashboard itself renders correctly in RTL — not LTR-only. |
+| FR-I18N-7 | Numeral system (Western 0–9 vs. Eastern Arabic-Indic ٠–٩) is admin-configurable **for the `ar` locale only**; `en`/`fr` pages always render Western numerals regardless of this setting. |
+| FR-I18N-8 | The rich text editor handles mixed-direction content (e.g. an Arabic paragraph containing an English term or French citation) without breaking paragraph alignment. |
+| FR-I18N-9 | Dates render in the Gregorian calendar, formatted per-locale, at minimum (Hijri display is a P4+ nice-to-have — §12). |
+| FR-I18N-10 | Each locale version of a content item is its own row, linked to siblings via `translationGroupId` (schema present from P0 — DM-4). |
+| FR-I18N-11 | If a requested locale has no translation yet, the page displays the Arabic version with a clearly labeled "not yet available in this language" notice instead of a 404; that fallback page is marked `noindex`. |
+| FR-I18N-12 | The CMS editor surfaces, per `translationGroupId`, which locales exist and which are missing. |
+| FR-I18N-13 | `hreflang` tags are emitted only for locale versions of a page that actually exist — never for fallback-rendered pages. |
+
+### 3.2 Authentication & Account Flows — `FR-AUTH`
+| ID | Requirement |
+| :-- | :-- |
+| FR-AUTH-1 | Full flow: Register, Login, Logout, Forgot/Reset Password, Verify Email. |
+| FR-AUTH-2 | RBAC roles exist: Admin, Editor, Moderator, User, Client (capability summary in §9; enforcement rules in §7 SEC-AUTHZ). |
+| FR-AUTH-3 | A `Client` account can view/access only `ClientRequest`/`Document` records linked to its own account. |
+
+### 3.3 CMS & Editor — `FR-CMS`
+| ID | Requirement |
+| :-- | :-- |
+| FR-CMS-1 | Rich text editor supports formatting, math notation, media embedding, and mixed-direction text. |
+| FR-CMS-2 | Content types: Articles, News, Research, Books, static Pages — each with Draft/Scheduled/Published states. |
+| FR-CMS-3 | Editors may publish directly within their assigned categories by default; Admin review-before-publish is **not** required by default. All publish actions remain reviewable after the fact via the audit log. This can be tightened to a review-before-publish workflow later without a schema change. |
+| FR-CMS-4 | Categories, Tags, and `Series` (ordered article sequences with automatic next/previous navigation). |
+| FR-CMS-5 | Auto-save + version history with one-click restore (P3b), scoped per `(locale, translationGroupId)` — restoring an Arabic version does not affect its English/French siblings. |
+
+### 3.4 Admin Dashboard — `FR-ADMIN`
+| ID | Requirement |
+| :-- | :-- |
+| FR-ADMIN-1 | Full control center: homepage layout builder, header/footer/menus, SEO metadata, site settings, users/roles, comment moderation queue (P2), themes — all RTL-aware. |
+| FR-ADMIN-2 | No source-code edits are required for day-to-day content operations post-launch. |
+
+### 3.5 Search — `FR-SEARCH`
+| ID | Requirement |
+| :-- | :-- |
+| FR-SEARCH-1 | P1: Postgres full-text search across articles/tags/categories/authors, with `pg_trgm` trigram typo tolerance (language-agnostic across Arabic/English/French). |
+| FR-SEARCH-2 | Arabic ranking uses Postgres's built-in `arabic` configuration + `arabic_stem` dictionary, paired with explicit diacritic (tashkeel) normalization at both index and query time. This must be **validated against a sample of real Arabic article content before P1 is considered done** — not assumed sufficient by default. |
+| FR-SEARCH-3 | Escalate to a dedicated search engine (ARCH-5, P4) only when a stated zero-result-query rate or latency threshold is crossed, tracked from P1 launch — a measured decision, not a guess. *(The specific numeric threshold is not defined in the source document — see Appendix B.)* |
+
+### 3.6 Media & Uploads — `FR-MEDIA` (security rules in §7 SEC-UPLOAD)
+| ID | Requirement |
+| :-- | :-- |
+| FR-MEDIA-1 | The same MIME allow-list and size-limit rules apply to every upload surface: Article featured images, Office project media, and client documents. |
+| FR-MEDIA-2 | Original filenames (including Arabic/Unicode) are preserved for display but never used directly as the storage object key. |
+| FR-MEDIA-3 | Files are served from a private bucket via signed, time-limited URLs — never public-by-default. |
+
+### 3.7 Comments & Moderation — `FR-COMMENT`
+| ID | Requirement |
+| :-- | :-- |
+| FR-COMMENT-1 | `Comment` is Article-scoped, carries a moderation status (Pending/Approved/Rejected/Spam), and ships in P2 with an actual queue for the Moderator role to use. |
+
+### 3.8 Client Portal — `FR-CLIENT`
+| ID | Requirement |
+| :-- | :-- |
+| FR-CLIENT-1 | P3a: authenticated client portal with secure file uploads and `ClientRequest` status tracking (submitted / in review / completed at minimum), notified per FR-NOTIF-2. |
+| FR-CLIENT-2 | P2: a simple contact & consultation-request form (email notification only, no status workflow) precedes the full portal in P3a. |
+
+### 3.9 Notifications — `FR-NOTIF`
+| ID | Requirement |
+| :-- | :-- |
+| FR-NOTIF-1 | Unified in-session toast system: Success / Error / Warning / Info. |
+| FR-NOTIF-2 | Transactional email covers account verification/reset **and** `ClientRequest` status changes, so a client isn't required to poll the portal manually to learn their request moved forward. |
+
+### 3.10 SEO — `FR-SEO`
+| ID | Requirement |
+| :-- | :-- |
+| FR-SEO-1 | Dynamic metadata, Open Graph/Twitter cards, `robots.txt`/`sitemap.xml`, canonical URLs, `hreflang` (FR-I18N-13). |
+| FR-SEO-2 | JSON-LD structured data using Schema.org types matched to this platform: `Person` (CV/about), `Article`/`ScholarlyArticle` (Knowledge Hub), `Organization` (Office), `BreadcrumbList` (navigation). |
+| FR-SEO-3 | Sitemaps include `hreflang` cross-references between locale versions of a page, matching FR-I18N-13. |
+
+### 3.11 PWA (Future — P4) — `FR-PWA`
+| ID | Requirement |
+| :-- | :-- |
+| FR-PWA-1 | P4: `manifest.json` + service worker for offline reading. No mobile-specific work beyond the API-contract decision (ARCH-13) until an app is actually planned. |
+
+---
+
+## 4. Non-Functional Requirements (NFR)
+
+### 4.1 Performance — `NFR-PERF`
+| ID | Requirement |
+| :-- | :-- |
+| NFR-PERF-1 | Lighthouse 90+ is a **P1+ gate for shipped pages**, not a blanket promise for unbuilt features. |
+| NFR-PERF-2 | RSC-first to minimize client JS; dynamic imports/code-splitting where it matters. |
+| NFR-PERF-3 | Adaptive loading (compressed WebP/AVIF + blur-up on slow connections; reduced animation on low-power devices), implemented incrementally and verified with real Lighthouse runs per phase — not asserted as already true. |
+| NFR-PERF-4 | Serverless database connection pooling (ARCH-2) is a **P0 reliability/performance requirement**, not an optimization deferred to later. |
+
+### 4.2 Accessibility — `NFR-A11Y`
+| ID | Requirement |
+| :-- | :-- |
+| NFR-A11Y-1 | Target conformance level: **WCAG 2.2 Level AA**, stated explicitly as a testable acceptance criterion. |
+| NFR-A11Y-2 | Full keyboard navigation, ARIA labeling, visible focus states, screen-reader support — verified per phase's shipped UI, including **RTL screen-reader behavior** as a distinct test case. |
+| NFR-A11Y-3 | Verified via automated tooling (axe-core, in the E2E suite — DEV-TEST) **and** a manual RTL/screen-reader pass, both required per the Definition of Done (§13). |
+
+### 4.3 Internationalization Quality — `NFR-I18N-Q`
+| ID | Requirement |
+| :-- | :-- |
+| NFR-I18N-Q-1 | Separate font stacks per script: a dedicated Arabic web font (e.g. Cairo, IBM Plex Sans Arabic, Noto Naskh Arabic) paired with a complementary Latin font — not one font awkwardly covering both. |
+| NFR-I18N-Q-2 | Line-height and letter-spacing tuned separately per script (Arabic generally needs more line-height for comfortable long-form reading than Latin). |
+
+### 4.4 Reliability / Backup & DR — `NFR-REL`
+| ID | Requirement |
+| :-- | :-- |
+| NFR-REL-1 | Supabase automated backups (point-in-time on paid tier) + manual dashboard export (Markdown/HTML/PDF/JSON/CSV), P4, Admin-only and audit-logged. |
+| NFR-REL-2 | A stated Recovery Point Objective and Recovery Time Objective apply, with **at least one periodic restore drill** to confirm backups are actually restorable, not merely present. |
+
+### 4.5 Testing Quality Bar
+See `DEV-TEST` (§8) for the testing strategy itself; the non-functional bar it feeds is the Definition of Done (§13).
+
+---
+
+## 5. Technical Architecture Decisions (ARCH)
+
+| ID | Concern | Decision | Rationale |
+| :-- | :-- | :-- | :-- |
+| ARCH-1 | Framework | Next.js (App Router), TypeScript strict | As specified |
+| ARCH-2 | DB / ORM | PostgreSQL (Supabase) / Prisma, via **Supavisor in transaction mode (port 6543)** for all runtime connections, with a separate direct connection string reserved for Prisma CLI migrations only | Prisma + Supabase + Vercel serverless without explicit pooling is a well-documented cause of exhausted DB connections in production — a P0 requirement, not a P4 optimization |
+| ARCH-3 | Auth | Auth.js, **database-backed sessions** (not JWT); Admin MFA (TOTP) required before P3a; idle-session timeout on Admin dashboard and Client portal | DB-backed sessions let an Admin instantly revoke a session — essential once real client documents are in scope; the per-request DB-read cost is an accepted trade-off given the platform's security priority |
+| ARCH-4 | Styling / UI | Tailwind CSS + shadcn/ui + logical-properties config | RTL-safe by construction |
+| ARCH-5 | Search (P1) | Postgres full-text (`tsvector` + `pg_trgm`), `arabic` configuration + diacritic normalization, validated against real content | Free and sufficient for initial volume — once validated for the platform's own default language |
+| ARCH-5b | Search (P4, only if needed) | Meilisearch (self-hosted), triggered by a stated zero-result-rate or latency threshold tracked from P1 launch | Avoids paying complexity tax up front; makes escalation measurable |
+| ARCH-6 | Transactional email | **Resend** (primary), Postmark documented as the fallback if deliverability issues arise | A named decision with a named fallback |
+| ARCH-7 | Background jobs / scheduling | Vercel Cron Jobs (P1+) for scheduled publish; escalate to a queue (e.g. Inngest) only if P4 needs cross-service orchestration | Matches actual need per phase rather than adopting queue infrastructure early |
+| ARCH-8 | Error tracking / observability | Sentry or equivalent from P1, with PII scrubbing explicitly configured given the client-document context | Errors need to go somewhere visible, not just out of the console (pairs with DEV-MAINT's no-console rule) |
+| ARCH-9 | Analytics | A cookieless, privacy-first tool (e.g. Plausible) | Removes the need for a cookie-consent banner entirely |
+| ARCH-10 | Dependency security | Automated dependency vulnerability scanning (e.g. Dependabot) from P0 | Supply-chain risk compounds over a 20-year horizon; a no-cost, automatable control |
+| ARCH-11 | Video (if ever needed) | Embed via YouTube/Vimeo, or Mux/Cloudflare Stream if self-hosted playback is required | Custom HLS/DASH is not justified until there's actual video content |
+| ARCH-12 | Application architecture | Clean Architecture: UI / Business Logic / Services / Data access strictly separated; domains `Core` (auth, users, settings), `Archive` (Knowledge Hub CMS), `Office` (services, projects, client portal); SOLID/DRY/KISS | Keeps the three-population model (BR-3) enforceable in code, not just in prose |
+| ARCH-13 | API contract policy | The app's own mutations use Next.js Server Actions internally. Server Actions are **not** a stable, independently-versioned contract for external consumers. A future native mobile app or partner integration consumes a **separate, versioned REST API**, built only when that need is real | Deciding this split now costs nothing; assuming Server Actions could later serve that role would be a costly wrong assumption discovered only when a mobile app is actually being built |
+| ARCH-14 | Server Action authorization | Every Server Action independently verifies the caller's session and role at the top of its own function body. Middleware-based route protection is defense-in-depth only, never the sole gate | Server Actions are directly invocable endpoints; UI-level hiding of a button is not access control |
+| ARCH-15 | Deployment topology | Vercel (app) + Supabase (DB/Auth/Storage). **Preview/staging deployments connect to an isolated database** (separate Supabase project or branch), never production | A well-documented failure mode for the Vercel + Supabase combination specifically |
+| ARCH-16 | Environment config | `.env.example` provided; all env vars validated at startup, never silently defaulted in production. Includes the Supavisor pooled connection string and the separate direct migration string | Prevents silent misconfiguration in production |
+| ARCH-17 | Dashboard config documentation | Non-default dashboard configuration (Vercel env vars/cron schedules; Supabase storage/RLS policies) documented in a short, living config reference alongside `.env.example` | Proportionate to current project scale — a documentation requirement, not full infrastructure-as-code |
+
+---
+
+## 6. Data Model Requirements (DM)
+
+| ID | Requirement |
+| :-- | :-- |
+| DM-1 | Core entities (illustrative, not exhaustive — Prisma schema is the actual source of truth once written): `User`, `Client`, `Role`, `Article`, `Category`, `Tag`, `Series`, `Page`, `Comment`, `MediaAsset`, `Service`, `Project`, `Partner`, `ClientRequest`, `Document`, `RedirectRule`, `AuditLogEntry`, `Setting`. |
+| DM-2 | `Client` is **not** a specialization of `User` — it is a structurally distinct role scoped so a Client-role account can only see `ClientRequest`/`Document` rows linked to their own account. |
+| DM-3 | `Comment` is Article-scoped, carries a moderation `status` (Pending/Approved/Rejected/Spam), and ships in P2. |
+| DM-4 | `Article` (and other routable content entities) carries a `translationGroupId` linking its locale siblings, present in the schema **from Phase 0** — before any English or French rows exist. |
+| DM-5 | `MediaAsset` alt-text and captions are **per-locale fields**, not a single global field. |
+| DM-6 | **Soft delete:** `Article`, `Page`, `Project`, `Service`, `ClientRequest`, and `Document` carry a nullable `deletedAt` timestamp rather than being hard-deleted. `AuditLogEntry` stores enough of a before/after snapshot that a deletion remains auditable even after a scheduled hard-purge (e.g. 90 days post soft-delete, reconciled against applicable data-erasure obligations once jurisdiction is confirmed — Appendix B). |
+| DM-7 | **Indexing baseline:** a unique composite index on `(locale, slug)` for every routable content entity; an indexed `RedirectRule.oldPath` lookup evaluated before falling through to a 404 handler; foreign keys indexed by default via Prisma; additional composite indexes added once real P1 query patterns are observed, not guessed at now. |
+| DM-8 | This entity list exists so an implementer (human or AI) doesn't have to guess the domain shape from prose alone — the Prisma schema, once written, is the binding source of truth. |
+
+---
+
+## 7. Security Requirements (SEC)
+
+### 7.1 Uploads — `SEC-UPLOAD`
+| ID | Requirement |
+| :-- | :-- |
+| SEC-UPLOAD-1 | Explicit MIME allow-list per upload context (images: jpg/png/webp; documents: pdf/docx/xlsx); hard max file size per type. |
+| SEC-UPLOAD-2 | Malware/virus scanning before a file is persisted (e.g. ClamAV or a cloud scanning API) — **mandatory** for client-portal uploads (external parties); recommended, not yet mandatory, for internal staff uploads. |
+| SEC-UPLOAD-3 | If the scanning service is unavailable or times out, uploads **fail closed** — rejected, never silently accepted. |
+| SEC-UPLOAD-4 | Files failing a scan are rejected with a generic message to the uploader; the specific rejection reason is visible to Admins only, via the audit log. |
+| SEC-UPLOAD-5 | A generated key is used for the actual storage path; original filenames (incl. Arabic/Unicode) are preserved only for display. |
+
+### 7.2 Privacy & Data Handling — `SEC-PRIV`
+| ID | Requirement |
+| :-- | :-- |
+| SEC-PRIV-1 | A published privacy policy describing what's collected and why, including a named list of sub-processors (hosting, database, transactional email, storage, analytics). |
+| SEC-PRIV-2 | No cookie-consent requirement, given the cookieless-analytics choice (ARCH-9) — session cookies used strictly for authentication are treated as necessary/functional and outside this simplification (see ASM-8). |
+| SEC-PRIV-3 | Defined retention and access rules for client-uploaded documents, aligned with the soft-delete/audit model (DM-6). |
+| SEC-PRIV-4 | A documented process for a client or user to request access to, or deletion of, their personal data and uploaded documents, with a stated response window (30 days as a reasonable default, pending confirmation of the applicable jurisdiction — Appendix B; not a legal opinion). |
+| SEC-PRIV-5 | A documented, lightweight breach-response process: who is notified internally, and the criteria for notifying affected clients, stated in advance rather than improvised. |
+
+### 7.3 Authentication & Authorization — `SEC-AUTHZ`
+| ID | Requirement |
+| :-- | :-- |
+| SEC-AUTHZ-1 | RBAC (Admin, Editor, Moderator, User, Client) enforced at **both** page and Server Action/API-route level. |
+| SEC-AUTHZ-2 | Session strategy: database-backed sessions via Auth.js (not stateless JWT), specifically so an Admin can force-revoke any session immediately. |
+| SEC-AUTHZ-3 | TOTP-based MFA is **required for Admin accounts before P3a ships** (before real client documents flow through the system); optional for Editor/Moderator. *(Client MFA policy is not specified in the source — Appendix B.)* |
+| SEC-AUTHZ-4 | Idle session timeout applies to the Admin dashboard and Client portal specifically; public Knowledge Hub browsing requires no such timeout. |
+| SEC-AUTHZ-5 | Every Server Action independently verifies session and role (= ARCH-14). |
+
+### 7.4 General Security — `SEC-GEN`
+| ID | Requirement |
+| :-- | :-- |
+| SEC-GEN-1 | HTTPS, security headers, strict CSP. |
+| SEC-GEN-2 | Input sanitization (XSS), CSRF protection, SQL-injection protection via Prisma. Rich-text/embed sanitization (FR-CMS-1) is the single highest-risk stored-XSS surface: an explicit allow-list of embeddable sources and allowed tags/attributes is required. |
+| SEC-GEN-3 | bcrypt password hashing. |
+| SEC-GEN-4 | Rate limiting / brute-force protection on auth endpoints. |
+| SEC-GEN-5 | Secrets never exposed client-side; strict env var validation at startup (= ARCH-16). |
+| SEC-GEN-6 | A documented key/secret rotation cadence (e.g. annual, or triggered by a role change) applies to auth secrets, database credentials, and third-party API keys. |
+| SEC-GEN-7 | Manual database exports (NFR-REL-1) are Admin-only and logged in the audit trail. |
+| SEC-GEN-8 | A `security.txt` file provides a responsible-disclosure contact. |
+
+---
+
+## 8. Development Rules & Engineering Discipline (DEV)
+
+### 8.1 Testing — `DEV-TEST`
+- Unit + integration test infrastructure from Phase 0; business logic written as pure functions where possible, specifically to keep it testable.
+- E2E coverage added per phase for that phase's critical flows (auth, publish, client request submission).
+- Automated accessibility testing (axe-core) integrated into the E2E suite from P1, feeding the Definition of Done (§13).
+- **No fixed numeric test-coverage percentage target** — reviewed qualitatively per change, consistent with this document's general avoidance of vanity metrics. Stated explicitly so the omission reads as a deliberate choice, not a gap.
+- Automated RTL/accessibility **visual regression testing** (Percy/Chromatic or Playwright screenshot comparison) recommended from **P4 onward** — manual-only RTL verification doesn't scale cleanly over a 20-year horizon, but isn't required earlier.
+
+### 8.2 Documentation — `DEV-DOC`
+- README covering install, DB setup, deployment, troubleshooting.
+- Inline documentation for non-obvious business logic only — not boilerplate comments.
+- A lightweight Architecture Decision Record (ADR) practice for future significant technical decisions, made durable going forward rather than a one-time exercise.
+- Glossary (§14) kept current as entities are added.
+
+### 8.3 Anti-Degradation / Maintenance — `DEV-MAINT`
+- Search the existing codebase before adding a component or utility — don't recreate what exists.
+- One consistent coding style across the project.
+- Don't add a third-party library when native/existing tooling already covers the need.
+- No deprecated Next.js APIs.
+- Zero dead code, zero unused imports, zero `console.log` in production builds — enforced via a `no-console` ESLint rule at CI error level for production build targets.
+- Permanent URLs: a `RedirectRule` table (P4) handles slug changes using **301 (permanent) redirects** specifically, matching the goal of preserving SEO equity.
+
+### 8.4 Process — `DEV-PROCESS`
+- Feed this specification to an AI coding assistant **one phase at a time**; never the whole document at once.
+- Search the codebase first, every time, before adding a component or utility (DEV-MAINT).
+- Request a written plan before code for anything touching the database schema, auth, or Server Actions.
+- Treat §13 as the actual acceptance bar per phase.
+
+---
+
+## 9. Role & Permission Summary
+
+Compiled from capability statements scattered across the source document — not a new design. Cells marked **"Not specified"** are genuine gaps in the source, carried to Appendix B rather than resolved by assumption.
+
+| Role | Scope / Access | MFA | Idle-Session Timeout | Notes |
+| :-- | :-- | :-- | :-- | :-- |
+| **Admin** | Full control center: content, users, roles, settings, comment queue, backups, audit log (incl. scan-rejection reasons); can force-revoke any session | **Required** before P3a | Yes (Admin dashboard) | |
+| **Editor** | Publishes directly within assigned categories; no forced review-before-publish | Optional | Not specified beyond "Admin dashboard" scope | |
+| **Moderator** | Comment moderation queue (P2) | Optional | Not specified | |
+| **User** | Public self-registration; commenting (P2) | Not specified | Not specified (public browsing explicitly has none) | |
+| **Client** | Own `ClientRequest`/`Document` records only (P3a) | **Not specified** | Yes (Client portal) | Self-registration vs. Admin-provisioned account creation is **not specified** |
+
+---
+
+## 10. Explicit Assumptions (ASM)
+
+These were implicit in v4.0 but materially affect how individual requirements should be interpreted. None of them change scope; they're surfaced so a future implementer (especially an AI agent without the full project history) doesn't misapply a rule outside its intended context.
+
+| ID | Assumption |
+| :-- | :-- |
+| ASM-1 | The project is planned on a **20-year time horizon** (stated in §0 of v4.0 without further justification). This is treated as a given business constraint explaining several "decide the shape now, build the feature later" decisions. |
+| ASM-2 | The team is assumed to be a **single maintainer or a very small team**, not an enterprise org — inferred from "self-verified by the maintainer" (DoD item), documentation-in-lieu-of-IaC (ARCH-17), and the absence of any multi-approver review process in the source. This affects which process-heavy practices are proportionate now vs. later. |
+| ASM-3 | This document is intended to be fed to AI coding assistants **phase by phase**; the requirement-ID scheme in this edition exists to make that hand-off more precise, not to change what's built. |
+| ASM-4 | The applicable data-protection jurisdiction (governing the 30-day response window, data-erasure timing in DM-6, and breach-notification specifics in SEC-PRIV) is **not confirmed** in the source. GDPR-style language is used as a reasonable default but is explicitly not a legal opinion. Given the Office contact number's country code (+222, Mauritania) alongside an Arabic/English/French audience, the actual applicable regime(s) should be confirmed with counsel before P2 (privacy policy) ships. |
+| ASM-5 | Office consulting engagements are assumed to be **invoiced/paid outside the platform** — no billing, invoicing, or payment entity appears anywhere in the data model or roadmap, and e-commerce is explicitly deferred to P5. |
+| ASM-6 | It's assumed Ahmed Al-Dah is not necessarily the sole content author — the RBAC model supports multiple Editor/Moderator accounts — though the "personal archive" framing of the Knowledge Hub suggests a single primary author for `Person` JSON-LD purposes. Both readings are consistent with the source; worth a one-line confirmation before P1's structured-data work. |
+| ASM-7 | The external document `srs-architectural-review.md` (containing the full severity-rating reasoning and trade-off analysis behind every v4.0 finding) was **not provided** to this restructuring pass. All C-#/H-#/M-#/L-# tags are preserved as cross-reference pointers only; this document cannot verify or extend that reasoning beyond what v4.0 already stated inline. |
+| ASM-8 | Authentication session cookies are assumed exempt from the "no cookie-consent banner" simplification (SEC-PRIV-2) as strictly-necessary functional cookies, distinct from the cookieless-analytics rationale the source gives. The source doesn't state this distinction explicitly; it's implied by standard practice. |
+
+---
+
+## 11. Out-of-Scope / YAGNI Register
+
+Everything below is a **deliberate deferral**, not an oversight. Each row states the condition under which it should be revisited — don't re-litigate these without a trigger being met.
+
+| Item | Not built until | Revisit when |
+| :-- | :-- | :-- |
+| E-commerce, LMS/Courses, Forums, Podcasts, Paid Memberships | P5, only if commissioned | Explicitly commissioned as new scope |
+| Native mobile app | P5 | A versioned REST API (ARCH-13) is actually needed |
+| Dedicated search engine (Meilisearch) | P4 | Stated zero-result-rate or latency threshold is crossed, tracked from P1 launch (numeric threshold not yet defined — Appendix B) |
+| Queue infrastructure (e.g. Inngest) | P4+ | Cross-service orchestration is needed beyond Vercel Cron |
+| Rich editor upgrades / draft version history | P3b | After P3a (client portal) ships |
+| PWA / offline reading | P4 | — |
+| Hijri calendar display | P4+, nice-to-have | Not a blocker for any earlier phase |
+| Analytics dashboard widgets | P4 | — (activity audit-log *capture* itself starts earlier, once multiple staff roles are active — see §7 SEC and DM-6; only the dashboard *widgets* are P4) |
+| Manual backup export UI + restore drills | P4 | — |
+| Visual regression testing (RTL/a11y) | Recommended P4+, not required earlier | Manual RTL verification stops scaling |
+| Full infrastructure-as-code | Not planned | Team/infra scale grows beyond current documentation-based approach (ARCH-17) |
+| Mandatory malware scanning for internal staff uploads | Recommended now, not mandatory | Could be promoted to mandatory later without a schema change |
+| Admin review-before-publish workflow for Articles | Not built now (Editors publish directly) | Can be added later without a schema change — `AuditLogEntry` + Draft/Scheduled/Published already support it |
+
+---
+
+## 12. Future Considerations
+
+- **Phase 4** brings: PWA/offline reading; a dedicated search engine only if the FR-SEARCH-3 trigger is met; an analytics dashboard built on the P0-onward audit log; automated-backup restore drills; a `RedirectRule` table (301-only); expanded structured data.
+- **Phase 5 (optional/future)**, only if commissioned: e-commerce, courses (LMS), forums, podcasts, and a native mobile app consuming a dedicated versioned REST API (never Server Actions — ARCH-13).
+- **Data-model compatibility, not early construction:** the only requirement today is that the schema and API layer don't make P5 features structurally harder later — e.g. content and user/permission models stay decoupled enough that a `Product` or `Course` table could be added without reshaping `Article` or `User`. This replaces any earlier instinct to build architectural hooks proactively, which would contradict this project's own YAGNI principle (§11).
+
+---
+
+## 13. Definition of Done — Per Phase
+
+A phase is complete when, **for what that phase shipped**:
+
+1. Zero ESLint/TypeScript errors.
+2. Production build compiles cleanly.
+3. Lighthouse 90+ on the pages that phase introduced.
+4. No duplicate components/utilities introduced.
+5. RTL/Arabic rendering verified visually for every new page (not just LTR) — self-verified by the maintainer for a project of this size, stated explicitly rather than left implicit.
+6. Admin can manage that phase's content without IDE access.
+7. Automated accessibility checks (axe-core) pass with zero critical/serious violations on that phase's new pages — WCAG 2.2 AA target (NFR-A11Y-1).
+8. No new high/critical-severity dependency vulnerability findings; no secrets committed — verified via CI.
+
+The platform overall is "done" only in the sense that Phase 4 has shipped — Phase 5 is optional and commissioned separately if ever needed.
+
+---
+
+## 14. Glossary
+
+- **`Article`** — Knowledge Hub content with authorship, categorization, and publication states (Draft/Scheduled/Published). The primary unit of the personal archive.
+- **`Page`** — static, mostly non-dated content (About, Privacy Policy, CV) that doesn't participate in categories/tags/series the way an `Article` does.
+- **`Project`** — Office-side portfolio/case-study content, distinct from `Article` because it belongs to the consulting brand's domain, not the personal archive's.
+- **`Service`** — a named offering on the Office side (e.g. a type of consulting engagement); distinct from `Project`, which is a specific past or ongoing body of work.
+- **`Series`** — an ordered sequence of `Article`s with automatic next/previous navigation; orthogonal to `Category`/`Tag`.
+- **`Category`** — a small, curated, hierarchical classification for `Article`s (admin-managed, drives navigation). **`Tag`** — an open, uncurated, flat label set (freely applied, drives discovery).
+- **`translationGroupId`** — a shared key linking locale-variant rows (Arabic/English/French) of the same underlying content as siblings, without merging them into one row.
+- **`Client`** vs. **`User`** — `Client` is an authenticated Office customer scoped to their own `ClientRequest`/`Document` records; `User` is a generic public-facing account (e.g. for commenting) with no access to client-portal data. Not related by inheritance.
+- **`ClientRequest`** — a consultation or service request submitted through the Office contact flow, with a status lifecycle. **`Document`** — a file attached to a `ClientRequest`, subject to the upload-security rules in §7.
+- **RBAC** — Role-Based Access Control.
+- **MFA / TOTP** — Multi-Factor Authentication / Time-based One-Time Password.
+- **RSC** — React Server Components.
+- **ADR** — Architecture Decision Record.
+- **RPO / RTO** — Recovery Point Objective / Recovery Time Objective.
+- **DoD** — Definition of Done.
+- **WCAG** — Web Content Accessibility Guidelines.
+- **CSP** — Content Security Policy.
+- **PITR** — Point-In-Time Recovery.
+
+---
+
+## Appendix A — Editorial Change Log
+
+This edition only reorganizes and labels v4.0; it does not add or remove scope. Major structural changes:
+
+| # | Change | Why | Benefit |
+| :-- | :-- | :-- | :-- |
+| 1 | Introduced a requirement-ID scheme (`BR-#`, `FR-<mod>-#`, `NFR-<cat>-#`, `ARCH-#`, `DM-#`, `SEC-<area>-#`, `DEV-<area>`) | The original had no way to reference a single requirement precisely — only a section number covering many mixed statements | A dev or AI agent can cite an exact requirement in a commit, PR, or prompt instead of "the search section" |
+| 2 | Split the single 29-section numbered document into 7 requirement categories (business / functional / non-functional / architecture / data / security / process) | Original sections mixed business rationale, UX detail, technical decisions, and security rules together (e.g. §4 mixed routing behavior with font-pairing) | Each stakeholder (business owner, security reviewer, backend dev, frontend dev) can go straight to their relevant section |
+| 3 | Consolidated all deferred/deferred-conditionally items (the roadmap table's "NOT included" column, §25's future-expansion list, and inline deferrals like Hijri calendar and visual regression testing) into one **Out-of-Scope / YAGNI Register** with revisit triggers | These were scattered across at least four places in the source | One place to check "should I build this now," preventing scope creep and re-litigating already-made decisions |
+| 4 | Compiled a **Role & Permission Summary** (§9) from capability statements scattered across §§7, 10–12 | RBAC roles were never presented as one matrix | Faster onboarding; also surfaces real gaps (e.g. Client MFA policy) as visible open items instead of silent assumptions |
+| 5 | Added an **Explicit Assumptions** section (§10) | Several decisions (20-year horizon, small-team scale, applicable legal jurisdiction, AI-agent-driven workflow, the unavailable external review doc) were load-bearing context that was never stated as such | Prevents a future reader — especially an AI agent without this conversation's history — from misapplying a rule outside its intended context |
+| 6 | Preserved all original severity tags (C-#/H-#/M-#/L-#) as cross-references throughout | Traceability to the source review's reasoning, even though that review document itself wasn't available to this pass (ASM-7) | No provenance is lost; a reader can still tell which requirements came from a Critical vs. Low-severity finding |
+| 7 | No requirement's scope, phase assignment, or technology choice was altered | This was a restructuring task, not a re-specification | Existing stakeholder sign-off on v4.0's content remains valid |
+
+---
+
+## Appendix B — Open Questions Requiring Stakeholder Input
+
+These are gaps in the source document, not answered here, because answering them would mean inventing new project decisions rather than formalizing existing ones.
+
+1. **Applicable data-protection jurisdiction** — governs SEC-PRIV-4's response window, DM-6's purge timing, and the specifics of the breach-notification process.
+2. **Numeric thresholds for search-engine escalation** (FR-SEARCH-3) — a zero-result-rate percentage and/or latency figure is referenced as "stated" but no number appears in the source.
+3. **Client account MFA policy** — required, optional, or not offered.
+4. **Client account provisioning** — self-registration vs. Admin-provisioned.
+5. **Editor/Moderator idle-session timeout** — the source specifies this for "the Admin dashboard," but doesn't clarify whether Editor/Moderator access outside the dashboard proper is in scope.
+6. **Single vs. multi-author Knowledge Hub** — affects the scope of the `Person` JSON-LD entity and whether the CMS needs multi-author UI treatment (bylines, author pages) sooner rather than later.
+7. **Full content of `srs-architectural-review.md`** — not available to this restructuring pass. Recommend keeping it attached alongside this document for anyone who needs the complete severity-rating reasoning behind a specific tag.
+8. **In-platformv4.1 - Structural Reorganization Edition payment/invoicing timing** — confirm that consulting engagements are meant to stay outside the platform through P4, as ASM-5 assumes, rather than needing it before P5.
+
+---
+*End of document — v4.1, Structural Reorganization Edition.*

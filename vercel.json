@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "next.config.ts", "use": "@vercel/next" }
+  ],
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "NEXTAUTH_SECRET": "@nextauth_secret"
+  },
+  "preview": {
+    "env": {
+      "DATABASE_URL": "@preview_database_url"
+    }
+  }
+}

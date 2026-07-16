@@ -1,0 +1,43 @@
+{
+  "name": "ahmed-aldah-platform",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:preview": "prisma migrate deploy",
+    "test:a11y": "node tests/a11y/run-axe.js"
+  },
+  "dependencies": {
+    "@auth/core": "^0.41.2",
+    "@auth/prisma-adapter": "^2.11.2",
+    "@prisma/client": "^5.12.0",
+    "next": "16.2.10",
+    "next-auth": "^4.24.14",
+    "next-intl": "^4.13.2",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "axe-playwright": "^2.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.10",
+    "playwright": "^1.38.0",
+    "prisma": "^5.12.0",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
+  }
+}

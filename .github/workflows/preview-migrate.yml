@@ -1,0 +1,29 @@
+name: Preview Migrations
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  migrate-preview:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm ci
+      - name: Ensure PREVIEW_DATABASE_URL is set
+        run: |
+          if [ -z "${{ secrets.PREVIEW_DATABASE_URL }}" ]; then
+            echo "PREVIEW_DATABASE_URL secret is missing. Failing (fail-closed)." >&2
+            exit 2
+          fi
+      - name: Run migrations against preview DB
+        env:
+          DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
+        run: npx prisma migrate deploy --schema=./prisma/schema.prisma

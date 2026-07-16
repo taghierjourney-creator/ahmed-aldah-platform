@@ -1,0 +1,10 @@
+{
+  "Home": {
+    "title": "Plateforme Ahmed Al-Dah",
+    "description": "Bienvenue sur le pôle de connaissances.",
+    "localeLabel": "Langue actuelle : {locale}"
+  },
+  "LocaleSwitcher": {
+    "label": "Changer de langue"
+  }
+}

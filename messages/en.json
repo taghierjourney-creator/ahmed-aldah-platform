@@ -1,0 +1,10 @@
+{
+  "Home": {
+    "title": "Ahmed Al-Dah Platform",
+    "description": "Welcome to the knowledge hub.",
+    "localeLabel": "Current locale: {locale}"
+  },
+  "LocaleSwitcher": {
+    "label": "Change language"
+  }
+}

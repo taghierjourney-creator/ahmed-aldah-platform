@@ -1,0 +1,333 @@
+Here is the complete, detailed, production-ready implementation roadmap for the Ahmed Al-Dah Platform, fully synthesizing the Master SRS (v4.0) and the mandatory Critical, High, and Medium findings from the Architectural Review.
+I have strictly adhered to your constraints: no code generation, rigid adherence to YAGNI/KISS, preservation of the phased strategy, and task breakdown optimized for single development sessions.
+Phase 0: Foundation
+ * Objective: Establish the core infrastructure, strict Next.js/TS baseline, secure database connection pooling, three-population auth model, and CI/CD with isolated environments.
+ * Dependencies: None.
+TSK-0.1: Next.js Skeleton, UI, and RTL Infrastructure
+ * Goal: Initialize the app with structural support for Arabic-first RTL and English/French.
+ * Description: Bootstrap Next.js App Router with strict TypeScript. Configure Tailwind CSS with logical properties (margin-inline-start, etc.) instead of physical properties. Setup next-intl for routing (Arabic default with no prefix; /en and /fr prefixed).
+ * Expected Files/Modules: tailwind.config.ts, middleware.ts, i18n.ts, app/[locale]/layout.tsx.
+ * Database Impact: None.
+ * Backend Impact: Route middleware for locale detection.
+ * Frontend Impact: Root layout, font loading (distinct Arabic vs. Latin stacks), and global CSS.
+ * Security Considerations: Validate all environment variables at startup.
+ * Acceptance Criteria: App runs locally. Navigating to / serves Arabic RTL; /en serves English LTR. UI flips cleanly. Zero lint/TS errors.
+ * Tests Required: Unit tests for locale routing logic.
+ * Estimated Difficulty: Low
+ * Pre-requisites: None.
+TSK-0.2: Database Provisioning and Connection Pooling
+ * Goal: Connect to PostgreSQL securely without risking serverless connection exhaustion.
+ * Description: Initialize Prisma schema. Configure Supabase. Set the primary application connection string to use Supavisor pooling in transaction mode (port 6543). Reserve a separate direct connection string explicitly for Prisma migrations.
+ * Expected Files/Modules: prisma/schema.prisma, lib/db.ts, .env.example.
+ * Database Impact: Initial DB creation (dev environment).
+ * Backend Impact: Prisma Client initialization.
+ * Frontend Impact: None.
+ * Security Considerations: Secrets management. .env.example must document the pooler vs. direct URL requirement.
+ * Acceptance Criteria: Prisma connects, can run a dummy migration, and Prisma Client can execute a basic query via the pooled connection.
+ * Tests Required: None (Infrastructure).
+ * Estimated Difficulty: Medium
+ * Pre-requisites: TSK-0.1
+TSK-0.3: Three-Population Auth & Session Setup
+ * Goal: Implement database-backed sessions and the foundational role model.
+ * Description: Setup Auth.js. Create User, Client, and Role entities. Define the exact Role enum: Admin, Editor, Moderator, User, Client. Force database-backed sessions (no JWT) to allow instant revocation.
+ * Expected Files/Modules: prisma/schema.prisma, auth.ts, app/api/auth/[...nextauth]/route.ts.
+ * Database Impact: Migration creating Auth.js tables, User, and Client tables.
+ * Backend Impact: Auth providers and session callbacks.
+ * Frontend Impact: Basic Login/Logout UI.
+ * Security Considerations: DB sessions are mandatory for admin/client revocation capabilities.
+ * Acceptance Criteria: A test user can log in, establish a DB-backed session, and log out. Roles are strictly typed.
+ * Tests Required: E2E test for login/logout flow.
+ * Estimated Difficulty: Medium
+ * Pre-requisites: TSK-0.2
+TSK-0.4: CI/CD, Isolated Preview, and Security Scanning
+ * Goal: Automate deployments and mandate security/accessibility checks.
+ * Description: Setup Vercel deployment pipeline. Configure a separate Supabase project/branch strictly for preview deployments. Enable Dependabot. Enforce no-console in ESLint for production builds. Integrate axe-core checks into the CI pipeline.
+ * Expected Files/Modules: .github/workflows/ci.yml, .eslintrc.json, vercel.json.
+ * Database Impact: Architectural isolation of staging data from production.
+ * Backend Impact: None.
+ * Frontend Impact: None.
+ * Security Considerations: Prevents leaking production data into PR branches and catches vulnerable NPM packages before merging.
+ * Acceptance Criteria: CI passes only if no critical vulnerabilities exist, no console logs are present, and E2E/a11y tests pass. Previews deploy to the isolated DB.
+ * Tests Required: CI pipeline validation.
+ * Estimated Difficulty: Medium
+ * Pre-requisites: TSK-0.3
+Phase 1: Knowledge Hub MVP
+ * Objective: Deliver the Core CMS, multi-locale data linking, Arabic full-text search, and observability.
+ * Dependencies: Phase 0 complete.
+TSK-1.1: CMS Schema & Cross-Locale Linking
+ * Goal: Create the database structure for articles and taxonomies.
+ * Description: Add Article, Category, Tag, and Series tables. Include translationGroupId on Article to link translations. Add deletedAt for soft-deletion. Add baseline composite indexes on (locale, slug).
+ * Expected Files/Modules: prisma/schema.prisma.
+ * Database Impact: Schema migrations and indexing.
+ * Backend Impact: Regenerated Prisma types.
+ * Frontend Impact: None yet.
+ * Security Considerations: None.
+ * Acceptance Criteria: Migration runs cleanly.
+ * Tests Required: None.
+ * Estimated Difficulty: Low
+ * Pre-requisites: None.
+TSK-1.2: CMS Server Actions & Authorization
+ * Goal: Build the mutation layer for content management.
+ * Description: Create Server Actions for CRUD operations on Articles. Every single action must independently verify the user's session and role at the top of the function body (do not rely on route middleware alone).
+ * Expected Files/Modules: actions/article.ts, actions/category.ts.
+ * Database Impact: Reads/Writes to CMS tables.
+ * Backend Impact: Core business logic for content.
+ * Frontend Impact: None yet.
+ * Security Considerations: Independent auth checks per Server Action. Input sanitization.
+ * Acceptance Criteria: Admin/Editor can create/edit articles via action calls; User/Client are rejected.
+ * Tests Required: Unit tests mocking session roles for authorized vs. unauthorized action calls.
+ * Estimated Difficulty: Medium
+ * Pre-requisites: TSK-1.1
+TSK-1.3: Knowledge Hub Frontend & Fallback UX
+ * Goal: Build the public-facing blog/reading UI.
+ * Description: Build /blog and /blog/[slug]. Implement "not yet available in this language" fallback UI for non-Arabic locales missing content (with noindex tag). Implement WebP/blur-up adaptive loading.
+ * Expected Files/Modules: app/[locale]/blog/page.tsx, app/[locale]/blog/[slug]/page.tsx, components/ArticleCard.tsx.
+ * Database Impact: Read-heavy operations.
+ * Backend Impact: Data fetching via React Server Components.
+ * Frontend Impact: Responsive, RTL-compliant reading experience.
+ * Security Considerations: Escape all rendered content.
+ * Acceptance Criteria: Lighthouse score 90+. Automated axe-core checks pass (WCAG 2.2 AA). Fallback UI works for missing translations.
+ * Tests Required: Playwright E2E for reading flow; automated visual/a11y tests.
+ * Estimated Difficulty: High
+ * Pre-requisites: TSK-1.2
+TSK-1.4: Arabic Full-Text Search Configuration
+ * Goal: Ensure high-quality search recall for Arabic diacritics.
+ * Description: Configure PostgreSQL tsvector with the arabic configuration. Implement an explicit diacritic-normalization utility to strip tashkeel at both index and query time. Integrate pg_trgm for typo tolerance. Setup analytics tracking for zero-result queries.
+ * Expected Files/Modules: prisma/migrations/..., actions/search.ts, lib/arabic-normalizer.ts.
+ * Database Impact: GIN indexes for Arabic FTS.
+ * Backend Impact: Search Server Action.
+ * Frontend Impact: Search input component and results page.
+ * Security Considerations: SQL injection prevention (use parameterized search queries).
+ * Acceptance Criteria: Searching for "مُحَمَّد" and "محمد" returns the same correct document.
+ * Tests Required: Integration tests validating search recall with and without diacritics.
+ * Estimated Difficulty: High
+ * Pre-requisites: TSK-1.1
+TSK-1.5: Observability & Error Tracking
+ * Goal: Ensure silent errors don't go unnoticed in production.
+ * Description: Integrate Sentry (or equivalent). Explicitly configure PII scrubbing so client/user data is never sent to the error logs.
+ * Expected Files/Modules: sentry.client.config.ts, sentry.server.config.ts.
+ * Database Impact: None.
+ * Backend Impact: Error boundary wrapping.
+ * Frontend Impact: Global error UI (error.tsx).
+ * Security Considerations: Strict PII scrubbing configuration.
+ * Acceptance Criteria: Throwing a deliberate error in dev/preview logs to Sentry with PII masked.
+ * Tests Required: None.
+ * Estimated Difficulty: Low
+ * Pre-requisites: None.
+Phase 2: Office Identity
+ * Objective: Launch the consulting brand pages, contact flow, and content moderation queue.
+ * Dependencies: Phase 1 complete.
+TSK-2.1: Office Pages & Schema
+ * Goal: Deliver the portfolio and services showcase.
+ * Description: Create Service and Project tables. Build static/CMS-driven pages for /office, /office/services, and /office/projects.
+ * Expected Files/Modules: prisma/schema.prisma, app/[locale]/office/page.tsx.
+ * Database Impact: Schema migrations.
+ * Backend Impact: Read services for Office data.
+ * Frontend Impact: Distinct Office branding UI.
+ * Security Considerations: None.
+ * Acceptance Criteria: Pages load beautifully, WCAG 2.2 AA compliant, Lighthouse 90+.
+ * Tests Required: E2E for Office navigation.
+ * Estimated Difficulty: Medium
+ * Pre-requisites: None.
+TSK-2.2: Contact Form & Transactional Email
+ * Goal: Allow prospective clients to reach out securely.
+ * Description: Build a contact Server Action. Integrate Resend as the primary email provider (Postmark as documented fallback). Implement strict rate-limiting on submission.
+ * Expected Files/Modules: actions/contact.ts, lib/email.ts, components/ContactForm.tsx.
+ * Database Impact: None (or logging contact requests).
+ * Backend Impact: Email dispatch logic.
+ * Frontend Impact: Form UI with toast notifications.
+ * Security Considerations: Rate-limiting is mandatory to prevent spam/abuse. Input sanitization.
+ * Acceptance Criteria: Submitting form sends email via Resend and shows success toast. Spamming it triggers rate limit.
+ * Tests Required: Unit tests for rate limiter and email trigger.
+ * Estimated Difficulty: Medium
+ * Pre-requisites: None.
+TSK-2.3: Comments & Moderation Queue
+ * Goal: Enable reader engagement and give the Moderator role its functionality.
+ * Description: Add Comment entity (Statuses: Pending, Approved, Rejected, Spam). Link to Article. Build a simple Admin Dashboard view for the Moderator to approve/reject comments.
+ * Expected Files/Modules: prisma/schema.prisma, actions/comment.ts, app/[locale]/admin/comments/page.tsx.
+ * Database Impact: New table and relations.
+ * Backend Impact: Server Actions for submission and moderation.
+ * Frontend Impact: Article comment section; Dashboard moderation table.
+ * Security Considerations: XSS sanitization on comment text is critical.
+ * Acceptance Criteria: User submits comment -> defaults to Pending -> Moderator approves -> appears on Article.
+ * Tests Required: E2E covering the comment lifecycle (submit -> moderate -> display).
+ * Estimated Difficulty: Medium
+ * Pre-requisites: TSK-2.1
+Phase 3a: Client Portal Core (Critical Path)
+ * Objective: Build the secure portal for clients. Security is the primary directive here.
+ * Dependencies: Phase 2 complete.
+TSK-3a.1: Mandatory Admin MFA & Idle Timeout
+ * Goal: Secure the platform before third-party documents are introduced.
+ * Description: Implement TOTP (Authenticator app) MFA. Enforce it at the login/middleware layer for the Admin role. Implement an idle-session timeout for Admin and Client portal sessions.
+ * Expected Files/Modules: actions/auth.ts, app/[locale]/admin/mfa-setup/page.tsx, middleware/session config.
+ * Database Impact: MFA secret fields on User.
+ * Backend Impact: Session validation logic.
+ * Frontend Impact: MFA prompt on login; timeout warning toast.
+ * Security Considerations: High. This is a critical defense mechanism for client data.
+ * Acceptance Criteria: Admin cannot access dashboard without setting up and entering TOTP. Idle session logs out automatically.
+ * Tests Required: E2E for MFA setup and login challenge.
+ * Estimated Difficulty: High
+ * Pre-requisites: None. (Must block all other Phase 3a tasks).
+TSK-3a.2: Client Portal Schema & Auth Guards
+ * Goal: Create structurally isolated data for clients.
+ * Description: Create ClientRequest and Document entities tied strictly to the Client role. Create /portal routes. Ensure Server Actions strictly scope queries to the logged-in Client ID.
+ * Expected Files/Modules: prisma/schema.prisma, actions/portal.ts, app/[locale]/portal/page.tsx.
+ * Database Impact: Schema migration.
+ * Backend Impact: Scoped data fetching.
+ * Frontend Impact: Secure dashboard UI.
+ * Security Considerations: IDOR (Insecure Direct Object Reference) prevention. Actions must assert client_id == session.user.id.
+ * Acceptance Criteria: Client A cannot see Client B's requests via UI or direct Action calls.
+ * Tests Required: Unit tests asserting IDOR protection in Server Actions.
+ * Estimated Difficulty: Medium
+ * Pre-requisites: TSK-3a.1
+TSK-3a.3: Secure File Uploads & Malware Scanning
+ * Goal: Ingest client files safely.
+ * Description: Setup private Supabase Storage buckets. Implement strict MIME allow-lists (pdf, docx, xlsx) and size limits. Integrate an API malware scanner (e.g., ClamAV). Implement a fail-closed policy (if scanner is down, reject upload). Use signed URLs for file retrieval. Rename files on storage; keep original names in DB.
+ * Expected Files/Modules: actions/upload.ts, lib/scanner.ts.
+ * Database Impact: Document metadata storage.
+ * Backend Impact: Upload pipeline orchestration.
+ * Frontend Impact: Upload UI with progress and error handling.
+ * Security Considerations: Critical. Fail-closed scanning, private buckets, and signed URLs are non-negotiable.
+ * Acceptance Criteria: Safe files upload successfully. EICAR test files are rejected and logged. Timeout with scanner rejects upload.
+ * Tests Required: Integration test with mocked scanner (pass, fail, timeout).
+ * Estimated Difficulty: High
+ * Pre-requisites: TSK-3a.2
+TSK-3a.4: Request Status Email Notifications
+ * Goal: Automate client communication.
+ * Description: Hook into ClientRequest status mutations to trigger transactional emails via Resend (e.g., "Under Review", "Completed").
+ * Expected Files/Modules: actions/portal.ts, lib/email.ts.
+ * Database Impact: None.
+ * Backend Impact: Event-driven email logic.
+ * Frontend Impact: None.
+ * Security Considerations: Ensure emails don't leak internal operational notes.
+ * Acceptance Criteria: Changing status in Admin dashboard sends a localized email to the Client.
+ * Tests Required: Unit test for notification dispatch.
+ * Estimated Difficulty: Low
+ * Pre-requisites: TSK-3a.2
+Phase 3b: Rich Content Authoring
+ * Objective: Upgrade CMS capabilities. (Can run parallel to 3a, but usually executed after).
+ * Dependencies: Phase 1 complete.
+TSK-3b.1: Rich Editor & Explicit Sanitization Allow-list
+ * Goal: Support complex articles (Math, Video) securely.
+ * Description: Integrate a rich-text editor supporting RTL/LTR mixed content and math notation. Implement a strict server-side HTML sanitization pass with an explicit allow-list for <iframe> tags (only YouTube/Vimeo) and attributes.
+ * Expected Files/Modules: components/RichEditor.tsx, lib/sanitize.ts.
+ * Database Impact: None.
+ * Backend Impact: Pre-save sanitization logic.
+ * Frontend Impact: Editor interface.
+ * Security Considerations: This is the highest-risk stored-XSS vector. Strict allow-lists are mandatory.
+ * Acceptance Criteria: Valid embeds render. Malicious <script> or unapproved <iframe> tags are stripped on save. Math renders correctly.
+ * Tests Required: Unit tests feeding malicious HTML payloads to the sanitizer.
+ * Estimated Difficulty: High
+ * Pre-requisites: None.
+TSK-3b.2: Version History & Auto-save
+ * Goal: Protect authors from data loss.
+ * Description: Implement auto-save. Create an ArticleVersion table. Build UI to restore past versions, ensuring restoration operates strictly per locale row (restoring Arabic doesn't overwrite French).
+ * Expected Files/Modules: prisma/schema.prisma, actions/versioning.ts, app/[locale]/admin/editor/page.tsx.
+ * Database Impact: Version tracking table.
+ * Backend Impact: Logic to snapshot and restore.
+ * Frontend Impact: Auto-save indicators and history sidebar.
+ * Security Considerations: None.
+ * Acceptance Criteria: Editor can restore a previous state. Sibling translations are unaffected.
+ * Tests Required: Integration test for save-and-restore flow.
+ * Estimated Difficulty: Medium
+ * Pre-requisites: TSK-3b.1
+Phase 4: Scale & Polish
+ * Objective: Implement final observability, compliance, SEO preservation, and offline capabilities.
+ * Dependencies: Phases 3a and 3b complete.
+TSK-4.1: Privacy-first Analytics & Audit Logging
+ * Goal: Track platform usage and admin actions without cookie banners.
+ * Description: Integrate Plausible (cookieless analytics). Implement an AuditLogEntry table to capture before/after snapshots of any soft-deleted or modified entity.
+ * Expected Files/Modules: prisma/schema.prisma, lib/audit.ts, layout wrappers.
+ * Database Impact: Audit log table (high write volume).
+ * Backend Impact: Middleware/Hooks to capture DB mutations.
+ * Frontend Impact: None.
+ * Security Considerations: Ensure audit logs don't capture passwords or tokens.
+ * Acceptance Criteria: Deleting an article creates an audit row with a full JSON snapshot of the article. Analytics track page views without cookies.
+ * Tests Required: Unit test for the audit logger.
+ * Estimated Difficulty: Medium
+ * Pre-requisites: None.
+TSK-4.2: Backup Exports & 301 Redirects
+ * Goal: Preserve SEO equity and verify disaster recovery.
+ * Description: Create a RedirectRule table for permanent (301) redirects. Build an Admin-only dashboard button to manually export DB data (JSON/CSV), logging the action to the Audit Log. Perform one manual restore drill.
+ * Expected Files/Modules: prisma/schema.prisma, actions/export.ts, middleware.ts.
+ * Database Impact: Redirects table.
+ * Backend Impact: Middleware routing for 301s. Export generation.
+ * Frontend Impact: Admin export UI.
+ * Security Considerations: Export is a highly sensitive action. Restrict strictly to Admin, require recent MFA verification, and log it.
+ * Acceptance Criteria: Changing a slug creates a redirect rule. Hitting the old slug 301s to the new one. Export downloads a secure CSV/JSON.
+ * Tests Required: E2E for redirect rule creation and routing.
+ * Estimated Difficulty: Medium
+ * Pre-requisites: TSK-4.1
+TSK-4.3: PWA & Structured Data
+ * Goal: Finalize offline reading and search visibility.
+ * Description: Add manifest.json and a basic Service Worker for offline reading. Inject Schema.org JSON-LD types (Person, Article, Organization, BreadcrumbList).
+ * Expected Files/Modules: public/manifest.json, app/[locale]/layout.tsx (for JSON-LD).
+ * Database Impact: None.
+ * Backend Impact: None.
+ * Frontend Impact: PWA installation prompt, offline fallback page.
+ * Security Considerations: None.
+ * Acceptance Criteria: Lighthouse PWA and SEO scores are 100. Rich snippets validate in Google Schema testing tool.
+ * Tests Required: Automated Lighthouse CI runs.
+ * Estimated Difficulty: Low
+ * Pre-requisites: None.
+📦 Final Project Artifacts
+1. Overall Project Roadmap
+ * Phase 0: Foundational setup, secure DB pooling, isolated preview environment, and Auth.js RBAC.
+ * Phase 1: Core Knowledge Hub CMS, Arabic FTS with normalization, and Sentry observability.
+ * Phase 2: Office branding, Resend contact flow, and Comment moderation.
+ * Phase 3a: Secure Client Portal, mandatory Admin MFA, Fail-closed malware scanning, and event notifications.
+ * Phase 3b: Rich text editing, XSS sanitization, and locale-scoped version history.
+ * Phase 4: Cookieless analytics, deep audit logging, 301 Redirects, PWA, and disaster recovery validation.
+2. Dependency Graph
+[Phase 0] ➔ [Phase 1] ➔ [Phase 2]
+From [Phase 2], development splits into two parallel tracks:
+➔ Track A: [Phase 3a] (Client Portal Core - Security Critical)
+➔ Track B: [Phase 3b] (Rich Content Authoring)
+Both [Phase 3a] and [Phase 3b] ➔ [Phase 4] (Scale & Polish).
+3. Critical Path
+The unblockable sequence to a functioning business platform:
+ * Setup DB & Auth (Phase 0)
+ * Content Schema & Arabic Search (Phase 1)
+ * Office Branding (Phase 2)
+ * MFA Enforced (TSK-3a.1)
+ * Client Portal & Secure Uploads (TSK-3a.2, TSK-3a.3)
+ * Audit Logs & Redirects (Phase 4)
+   (Note: Phase 3b's Rich Editor is not on the critical path to business operations and can be delayed if necessary).
+4. Recommended Implementation Order
+ * TSK-0.1 to TSK-0.4: Infrastructure & Environments.
+ * TSK-1.1 to TSK-1.5: CMS & Arabic FTS.
+ * TSK-2.1 to TSK-2.3: Office Identity.
+ * TSK-3a.1: Admin MFA (Immediate priority).
+ * TSK-3a.2 to TSK-3a.4: Secure Client Portal.
+ * TSK-3b.1 to TSK-3b.2: Rich Editor.
+ * TSK-4.1 to TSK-4.3: Analytics, Audit, and Final Polish.
+5. Milestones
+ * M1 (Solid Ground): Vercel CI/CD deploys cleanly, Supavisor connects, RTL renders, and users can log in via Auth.js.
+ * M2 (Knowledge Hub): Content can be authored and read in multiple languages. Arabic search perfectly handles diacritics.
+ * M3 (Office Open): Services are live. Contact forms reach the inbox via Resend. Comments can be moderated.
+ * M4 (Secure Portal): Admins are locked behind MFA. Clients can log in and upload files that are programmatically scanned for malware.
+ * M5 (Pro Authoring): Editors have a rich text tool with math and video embeds, plus version history.
+ * M6 (Production Ready): Audit logs track mutations, 301 redirects preserve SEO, and a backup drill is successfully completed.
+6. Master Checklist
+ * [ ] TSK-0.1 Next.js, RTL layout, and next-intl setup.
+ * [ ] TSK-0.2 Prisma + Supavisor (Port 6543) configuration.
+ * [ ] TSK-0.3 Auth.js DB-backed sessions and 3-population Roles.
+ * [ ] TSK-0.4 CI/CD, Dependabot, and Isolated Preview DB.
+ * [ ] TSK-1.1 CMS Schema (translationGroupId, soft-delete).
+ * [ ] TSK-1.2 Server Actions with isolated Auth checks.
+ * [ ] TSK-1.3 Frontend reading UI and fallback notices.
+ * [ ] TSK-1.4 Postgres arabic config and diacritic normalization.
+ * [ ] TSK-1.5 Sentry integration with strict PII scrubbing.
+ * [ ] TSK-2.1 Office Services & Projects pages.
+ * [ ] TSK-2.2 Resend Contact form with rate limiting.
+ * [ ] TSK-2.3 Comment entity and Moderator dashboard.
+ * [ ] TSK-3a.1 Admin TOTP MFA and idle-session timeout.
+ * [ ] TSK-3a.2 Client Portal Schema and IDOR protection.
+ * [ ] TSK-3a.3 File upload bounds, ClamAV fail-closed scanning.
+ * [ ] TSK-3a.4 Event-driven email status notifications.
+ * [ ] TSK-3b.1 Rich Editor with explicit HTML sanitization allow-list.
+ * [ ] TSK-3b.2 Auto-save and locale-scoped version restore.
+ * [ ] TSK-4.1 Cookieless Analytics and full Before/After Audit Log.
+ * [ ] TSK-4.2 301 RedirectRule table and manual Backup Restore Drill.
+ * [ ] TSK-4.3 PWA manifest and JSON-LD schema generation.
+ * [ ] Final Verification: Lighthouse 90+, Zero CI vulnerabilities, Zero axe-core violations.
