@@ -1,0 +1,28 @@
+npm error code ERESOLVE
+npm error ERESOLVE could not resolve
+npm error
+npm error While resolving: next-auth@4.24.14
+npm error Found: @auth/core@0.41.2
+npm error node_modules/@auth/core
+npm error   @auth/core@"0.41.2" from @auth/prisma-adapter@2.11.2
+npm error   node_modules/@auth/prisma-adapter
+npm error     @auth/prisma-adapter@"^2.11.2" from the root project
+npm error   @auth/core@"^0.41.2" from the root project
+npm error
+npm error Could not resolve dependency:
+npm error peerOptional @auth/core@"0.34.3" from next-auth@4.24.14
+npm error node_modules/next-auth
+npm error   next-auth@"^4.24.14" from the root project
+npm error
+npm error Conflicting peer dependency: @auth/core@0.34.3
+npm error node_modules/@auth/core
+npm error   peerOptional @auth/core@"0.34.3" from next-auth@4.24.14
+npm error   node_modules/next-auth
+npm error     next-auth@"^4.24.14" from the root project
+npm error
+npm error Fix the upstream dependency conflict, or retry this command with --force or --legacy-peer-deps to accept an incorrect (and potentially broken) dependency resolution.
+npm error
+npm error
+npm error For a full report see:
+npm error C:\Users\dtabd\AppData\Local\npm-cache\_logs\2026-07-18T02_58_06_001Z-eresolve-report.txt
+npm error A complete log of this run can be found in: C:\Users\dtabd\AppData\Local\npm-cache\_logs\2026-07-18T02_58_06_001Z-debug-0.log
