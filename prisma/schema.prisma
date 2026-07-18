@@ -4,7 +4,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -20,16 +19,16 @@ enum Role {
 
 // NextAuth-compatible schema with role on the User model
 model User {
-  id             String    @id @default(cuid())
-  name           String?
-  email          String?   @unique
-  emailVerified  DateTime?
-  image          String?
-  role           Role      @default(USER)
-  accounts       Account[]
-  sessions       Session[]
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(USER)
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Client {
@@ -41,18 +40,18 @@ model Client {
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -80,48 +79,63 @@ model VerificationToken {
 model Category {
   id        String    @id @default(uuid())
   name      String
-  slug      String    @unique
-  articles  Article[]
+  slug      String
+  locale    String
+  articles  Article[] @relation("CategoryArticles")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+
+  @@unique([locale, slug])
+  @@index([locale])
+  @@index([deletedAt])
 }
 
 model Tag {
   id        String    @id @default(uuid())
   name      String
-  slug      String    @unique
+  slug      String
+  locale    String
   articles  Article[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+
+  @@unique([locale, slug])
+  @@index([locale])
+  @@index([deletedAt])
 }
 
 model Series {
   id          String    @id @default(uuid())
   title       String
   description String?   @db.Text
-  slug        String    @unique
-  articles    Article[]
+  slug        String
+  locale      String
+  articles    Article[] @relation("SeriesArticles")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
+
+  @@unique([locale, slug])
+  @@index([locale])
+  @@index([deletedAt])
 }
 
 model Article {
-  id                 String    @id @default(uuid())
+  id                 String  @id @default(uuid())
   title              String
   slug               String
-  content            String    @db.Text
-  published          Boolean   @default(false)
+  content            String  @db.Text
+  published          Boolean @default(false)
   locale             String
-  translationGroupId String
+  translationGroupId String  @default(uuid())
 
   categoryId String?
-  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  category   Category? @relation("CategoryArticles", fields: [categoryId], references: [id], onDelete: SetNull)
 
   seriesId String?
-  series   Series? @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  series   Series? @relation("SeriesArticles", fields: [seriesId], references: [id], onDelete: SetNull)
 
   tags Tag[]
 
@@ -130,6 +144,7 @@ model Article {
   deletedAt DateTime?
 
   @@unique([locale, slug])
+  @@index([locale])
   @@index([translationGroupId])
   @@index([deletedAt])
 }
