@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getArticleByLocaleAndSlug } from "@/actions/article";
+import db from "@/lib/db";
 import ReaderPanel from "@/components/ReaderPanel";
 
 type ArticleDetailPageProps = {
@@ -11,7 +11,14 @@ type ArticleDetailPageProps = {
 };
 
 export async function generateMetadata({ params }: ArticleDetailPageProps): Promise<Metadata> {
-  const article = await getArticleByLocaleAndSlug(params.locale, params.slug);
+  const article = await db.article.findFirst({
+    where: {
+      locale: params.locale,
+      slug: params.slug,
+      deletedAt: null,
+      published: true,
+    },
+  });
 
   if (!article && params.locale !== "ar") {
     return {
@@ -36,7 +43,17 @@ export async function generateMetadata({ params }: ArticleDetailPageProps): Prom
 
 export default async function ArticleDetailPage({ params }: ArticleDetailPageProps) {
   const { locale, slug } = params;
-  const article = await getArticleByLocaleAndSlug(locale, slug);
+  const article = await db.article.findFirst({
+    where: {
+      locale,
+      slug,
+      deletedAt: null,
+      published: true,
+    },
+    include: {
+      category: true,
+    },
+  });
 
   if (!article && locale === "ar") {
     notFound();

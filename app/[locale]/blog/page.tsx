@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getArticles } from "@/actions/article";
+import db from "@/lib/db";
 import ArticleCard from "@/components/ArticleCard";
+import SmartSearch from "@/components/SmartSearch";
 
 type BlogPageProps = {
   params: {
@@ -16,7 +17,21 @@ export const metadata: Metadata = {
 
 export default async function BlogPage({ params }: BlogPageProps) {
   const locale = params.locale;
-  const articles = await getArticles({ published: true, locale });
+  const articles = await db.article.findMany({
+    where: {
+      locale,
+      published: true,
+      deletedAt: null,
+    },
+    include: {
+      category: true,
+      tags: true,
+      series: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
   if (!articles) {
     notFound();
@@ -38,6 +53,8 @@ export default async function BlogPage({ params }: BlogPageProps) {
               : "Discover the latest published articles for your locale."}
           </p>
         </div>
+
+        <SmartSearch />
 
         {articles.length === 0 ? (
           <div className="rounded-3xl border border-border/80 bg-card p-10 text-center text-foreground/80">

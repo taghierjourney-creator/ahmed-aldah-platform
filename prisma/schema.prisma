@@ -123,13 +123,16 @@ model Series {
 }
 
 model Article {
-  id                 String  @id @default(uuid())
-  title              String
-  slug               String
-  content            String  @db.Text
-  published          Boolean @default(false)
-  locale             String
-  translationGroupId String  @default(uuid())
+  id                    String  @id @default(uuid())
+  title                 String
+  slug                  String
+  content               String  @db.Text
+  published             Boolean @default(false)
+  locale                String
+  translationGroupId    String  @default(uuid())
+  normalizedTitle       String  @default("")
+  normalizedDescription String  @default("")
+  normalizedContent     String  @default("")
 
   categoryId String?
   category   Category? @relation("CategoryArticles", fields: [categoryId], references: [id], onDelete: SetNull)
@@ -147,4 +150,5 @@ model Article {
   @@index([locale])
   @@index([translationGroupId])
   @@index([deletedAt])
+  @@index([normalizedTitle, normalizedDescription])
 }

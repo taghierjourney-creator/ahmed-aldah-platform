@@ -2,6 +2,7 @@
 
 import type { Prisma } from "@prisma/client";
 import db from "@/lib/db";
+import { normalizeArabic } from "@/lib/arabic-normalizer";
 import { requireAdminOrEditor } from "./auth";
 
 export type CreateArticleInput = {
@@ -41,6 +42,9 @@ export async function createArticle(data: CreateArticleInput) {
   await requireAdminOrEditor();
 
   const translationGroupId = data.translationGroupId ?? crypto.randomUUID();
+  const normalizedTitle = normalizeArabic(data.title);
+  const normalizedDescription = normalizeArabic(data.content.slice(0, 240));
+  const normalizedContent = normalizeArabic(data.content);
   const createData: Prisma.ArticleCreateInput = {
     title: data.title,
     slug: data.slug,
@@ -48,6 +52,9 @@ export async function createArticle(data: CreateArticleInput) {
     locale: data.locale,
     translationGroupId,
     published: data.published ?? false,
+    normalizedTitle,
+    normalizedDescription,
+    normalizedContent,
     category: data.categoryId
       ? {
           connect: { id: data.categoryId },
@@ -157,6 +164,9 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
     throw new Error("Article not found");
   }
 
+  const normalizedTitle = normalizeArabic(data.title ?? existing.title);
+  const normalizedDescription = normalizeArabic((data.content ?? existing.content).slice(0, 240));
+  const normalizedContent = normalizeArabic(data.content ?? existing.content);
   const updateData: Prisma.ArticleUpdateInput = {
     title: data.title,
     slug: data.slug,
@@ -164,6 +174,9 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
     locale: data.locale,
     translationGroupId: data.translationGroupId ?? existing.translationGroupId,
     published: data.published,
+    normalizedTitle,
+    normalizedDescription,
+    normalizedContent,
     category:
       data.categoryId === null
         ? { disconnect: true }
