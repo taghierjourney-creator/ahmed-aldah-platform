@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { getServerSession } from "next-auth/next";
 
+import { getServerSession } from "@/lib/auth";
 import { getPendingCommentsForModeration } from "@/actions/comment";
 import CommentModerationTable from "@/components/admin/CommentModerationTable";
-import { authOptions } from "@/auth";
 import type { Locale } from "@/lib/locale";
+
+export const dynamic = "force-dynamic";
 
 type AdminCommentsPageProps = {
   params: Promise<{ locale: string }>;
@@ -29,10 +30,9 @@ export default async function AdminCommentsPage({ params }: AdminCommentsPagePro
 
   const t = await getTranslations("CommentModeration");
 
+  const session = await getServerSession();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const session = await getServerSession(authOptions as unknown as any);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const role = String((session as any)?.user?.role ?? "").toUpperCase();
+  const role = String((session?.user as any)?.role ?? "").toUpperCase();
   const allowed = role === "ADMIN" || role === "MODERATOR";
 
   if (!allowed) {

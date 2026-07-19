@@ -1,9 +1,8 @@
 "use server";
 
 import { CommentStatus } from "@prisma/client";
-import { getServerSession } from "next-auth/next";
 
-import { authOptions } from "@/auth";
+import { getServerSession } from "@/lib/auth";
 import db from "@/lib/db";
 
 const ADMIN_MODERATOR_ROLES = new Set(["ADMIN", "MODERATOR"]);
@@ -108,10 +107,9 @@ export async function moderateComment(
   commentId: string,
   action: ModerationAction,
 ): Promise<ModerateCommentResult> {
+  const session = await getServerSession();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const session = await getServerSession(authOptions as unknown as any);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const role = String((session as any)?.user?.role ?? "").toUpperCase();
+  const role = String((session?.user as any)?.role ?? "").toUpperCase();
 
   if (!ADMIN_MODERATOR_ROLES.has(role)) {
     return { success: false, errorCode: "unauthorized" };
