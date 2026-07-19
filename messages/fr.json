@@ -6,5 +6,91 @@
   },
   "LocaleSwitcher": {
     "label": "Changer de langue"
+  },
+  "Office": {
+    "metadata": {
+      "title": "Ahmed Al-Dah Conseil & Recherche",
+      "description": "Services de conseil et de recherche spécialisés par Ahmed Al-Dah."
+    },
+    "hero": {
+      "eyebrow": "Bureau Ahmed Al-Dah",
+      "title": "Conseil & Recherche",
+      "subtitle": "Une expertise intellectuelle traduite en solutions concrètes",
+      "description": "Nous offrons des services de conseil et de recherche spécialisés aux organisations et aux particuliers, avec un engagement envers la qualité, la rigueur et la gouvernance des connaissances."
+    },
+    "intro": {
+      "title": "Qui sommes-nous",
+      "body": "Ahmed Al-Dah Conseil & Recherche prolonge le parcours intellectuel d'Ahmed Al-Dah, en combinant analyse approfondie et expérience terrain pour éclairer la décision et produire des connaissances."
+    },
+    "nav": {
+      "label": "Navigation du bureau",
+      "services": "Services",
+      "projects": "Projets",
+      "backToOffice": "Retour au bureau"
+    },
+    "cta": {
+      "exploreServices": "Découvrir nos services",
+      "viewProjects": "Voir nos projets"
+    }
+  },
+  "OfficeServices": {
+    "metadata": {
+      "title": "Services — Bureau Ahmed Al-Dah",
+      "description": "Services de conseil et de recherche spécialisés."
+    },
+    "heading": "Nos services",
+    "subheading": "Des solutions de conseil et de recherche adaptées à vos besoins institutionnels et intellectuels.",
+    "empty": "Aucun service publié pour le moment. Du contenu sera ajouté prochainement."
+  },
+  "OfficeProjects": {
+    "metadata": {
+      "title": "Projets — Bureau Ahmed Al-Dah",
+      "description": "Un portfolio de projets de conseil et de recherche."
+    },
+    "heading": "Nos projets",
+    "subheading": "Une sélection de travaux de conseil et de recherche dont nous sommes fiers.",
+    "empty": "Aucun projet publié pour le moment. Du contenu sera ajouté prochainement."
+  },
+  "ContactForm": {
+    "eyebrow": "Contactez-nous",
+    "title": "Demander une consultation",
+    "description": "Remplissez le formulaire ci-dessous et nous vous répondrons dès que possible.",
+    "fields": {
+      "name": {
+        "label": "Nom complet",
+        "placeholder": "Entrez votre nom"
+      },
+      "email": {
+        "label": "Adresse e-mail",
+        "placeholder": "example@email.com"
+      },
+      "phone": {
+        "label": "Téléphone (facultatif)",
+        "placeholder": "+222 22228131"
+      },
+      "subject": {
+        "label": "Objet",
+        "placeholder": "Objet de votre message"
+      },
+      "message": {
+        "label": "Message",
+        "placeholder": "Écrivez votre message ici…"
+      }
+    },
+    "submit": "Envoyer le message",
+    "submitting": "Envoi en cours…",
+    "loading": "Veuillez patienter pendant l'envoi de votre message.",
+    "validation": {
+      "required": "Ce champ est obligatoire.",
+      "tooShort": "Le texte saisi est trop court.",
+      "tooLong": "Le texte saisi est trop long.",
+      "invalidEmail": "Veuillez saisir une adresse e-mail valide.",
+      "invalidPhone": "Veuillez saisir un numéro de téléphone valide."
+    },
+    "toast": {
+      "success": "Votre message a été envoyé avec succès. Nous vous contacterons bientôt.",
+      "error": "Impossible d'envoyer votre message. Veuillez réessayer plus tard.",
+      "rateLimit": "Vous avez dépassé le nombre de tentatives autorisées. Veuillez patienter avant de réessayer."
+    }
   }
 }

@@ -152,3 +152,28 @@ model Article {
   @@index([deletedAt])
   @@index([normalizedTitle, normalizedDescription])
 }
+
+// Office models: Service, Project (TSK-2.1)
+model Service {
+  id          String   @id @default(uuid())
+  slug        String
+  title       String
+  description String   @db.Text
+  locale      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([locale, slug])
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  slug        String
+  title       String
+  description String   @db.Text
+  locale      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([locale, slug])
+}

@@ -6,5 +6,91 @@
   },
   "LocaleSwitcher": {
     "label": "Change language"
+  },
+  "Office": {
+    "metadata": {
+      "title": "Ahmed Al-Dah Consulting & Research",
+      "description": "Specialized consulting and research services by Ahmed Al-Dah."
+    },
+    "hero": {
+      "eyebrow": "Ahmed Al-Dah Office",
+      "title": "Consulting & Research",
+      "subtitle": "Knowledge expertise translated into practical solutions",
+      "description": "We deliver specialized consulting and research services for organizations and individuals, with a commitment to quality, rigor, and knowledge governance."
+    },
+    "intro": {
+      "title": "About the Office",
+      "body": "Ahmed Al-Dah Consulting & Research extends Ahmed Al-Dah's intellectual path, combining deep analysis with field experience to support decision-making and knowledge production."
+    },
+    "nav": {
+      "label": "Office navigation",
+      "services": "Services",
+      "projects": "Projects",
+      "backToOffice": "Back to Office"
+    },
+    "cta": {
+      "exploreServices": "Explore our services",
+      "viewProjects": "View our projects"
+    }
+  },
+  "OfficeServices": {
+    "metadata": {
+      "title": "Services — Ahmed Al-Dah Office",
+      "description": "Specialized consulting and research services."
+    },
+    "heading": "Our Services",
+    "subheading": "Consulting and research solutions designed for your institutional and intellectual needs.",
+    "empty": "No services are published yet. Content will be added soon."
+  },
+  "OfficeProjects": {
+    "metadata": {
+      "title": "Projects — Ahmed Al-Dah Office",
+      "description": "A portfolio of consulting and research projects."
+    },
+    "heading": "Our Projects",
+    "subheading": "Selected consulting and research work we are proud to share.",
+    "empty": "No projects are published yet. Content will be added soon."
+  },
+  "ContactForm": {
+    "eyebrow": "Get in touch",
+    "title": "Request a consultation",
+    "description": "Fill out the form below and we will get back to you as soon as possible.",
+    "fields": {
+      "name": {
+        "label": "Full name",
+        "placeholder": "Enter your name"
+      },
+      "email": {
+        "label": "Email address",
+        "placeholder": "example@email.com"
+      },
+      "phone": {
+        "label": "Phone (optional)",
+        "placeholder": "+222 22228131"
+      },
+      "subject": {
+        "label": "Subject",
+        "placeholder": "Subject of your message"
+      },
+      "message": {
+        "label": "Message",
+        "placeholder": "Write your message here…"
+      }
+    },
+    "submit": "Send message",
+    "submitting": "Sending…",
+    "loading": "Please wait while your message is being sent.",
+    "validation": {
+      "required": "This field is required.",
+      "tooShort": "The entered text is too short.",
+      "tooLong": "The entered text is too long.",
+      "invalidEmail": "Please enter a valid email address.",
+      "invalidPhone": "Please enter a valid phone number."
+    },
+    "toast": {
+      "success": "Your message was sent successfully. We will contact you soon.",
+      "error": "We could not send your message. Please try again later.",
+      "rateLimit": "You have exceeded the allowed number of attempts. Please wait before trying again."
+    }
   }
 }
