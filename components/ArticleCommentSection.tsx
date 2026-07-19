@@ -23,6 +23,7 @@ export default function ArticleCommentSection({
   initialComments,
 }: ArticleCommentSectionProps) {
   const t = useTranslations("Comments");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [comments, _setComments] = useState(initialComments);
   const [content, setContent] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
