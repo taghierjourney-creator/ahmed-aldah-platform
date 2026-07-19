@@ -92,5 +92,45 @@
       "error": "We could not send your message. Please try again later.",
       "rateLimit": "You have exceeded the allowed number of attempts. Please wait before trying again."
     }
+  },
+  "Comments": {
+    "title": "Comments",
+    "description": "Share your thoughts. All comments are reviewed before publication.",
+    "placeholder": "Write your comment here…",
+    "submit": "Submit comment",
+    "submitting": "Submitting…",
+    "loading": "Please wait…",
+    "success": "Your comment was submitted and will be reviewed before publishing.",
+    "empty": "No comments have been published yet.",
+    "errors": {
+      "validation": "Please enter a valid comment (at least 3 characters).",
+      "generic": "Could not submit your comment. Please try again."
+    }
+  },
+  "CommentModeration": {
+    "metadata": {
+      "title": "Comment Moderation — Ahmed Al-Dah",
+      "description": "Review and moderate reader comments."
+    },
+    "eyebrow": "Admin",
+    "title": "Comment moderation queue",
+    "description": "Review pending comments and approve, reject, or mark them as spam.",
+    "empty": "No comments are waiting for review.",
+    "table": {
+      "comment": "Comment",
+      "article": "Article",
+      "date": "Date",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "spam": "Spam"
+    },
+    "permission": {
+      "title": "Unauthorized",
+      "description": "This page is available to administrators and moderators only."
+    }
   }
 }

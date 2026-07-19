@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getApprovedCommentsForArticle } from "@/actions/comment";
+import ArticleCommentSection from "@/components/ArticleCommentSection";
 import db from "@/lib/db";
 import ReaderPanel from "@/components/ReaderPanel";
 
@@ -81,6 +83,8 @@ export default async function ArticleDetailPage({ params }: ArticleDetailPagePro
     );
   }
 
+  const approvedComments = await getApprovedCommentsForArticle(article.id);
+
   return (
     <ReaderPanel locale={locale}>
       <main className="mx-auto max-w-5xl px-0 py-0 sm:px-0 lg:px-0">
@@ -107,6 +111,15 @@ export default async function ArticleDetailPage({ params }: ArticleDetailPagePro
               {article.content}
             </p>
           </div>
+
+          <ArticleCommentSection
+            articleId={article.id}
+            initialComments={approvedComments.map((comment) => ({
+              id: comment.id,
+              content: comment.content,
+              createdAt: comment.createdAt.toISOString(),
+            }))}
+          />
         </article>
       </main>
     </ReaderPanel>

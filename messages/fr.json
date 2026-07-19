@@ -92,5 +92,45 @@
       "error": "Impossible d'envoyer votre message. Veuillez réessayer plus tard.",
       "rateLimit": "Vous avez dépassé le nombre de tentatives autorisées. Veuillez patienter avant de réessayer."
     }
+  },
+  "Comments": {
+    "title": "Commentaires",
+    "description": "Partagez votre avis. Tous les commentaires sont examinés avant publication.",
+    "placeholder": "Écrivez votre commentaire ici…",
+    "submit": "Envoyer le commentaire",
+    "submitting": "Envoi en cours…",
+    "loading": "Veuillez patienter…",
+    "success": "Votre commentaire a été envoyé et sera examiné avant publication.",
+    "empty": "Aucun commentaire publié pour le moment.",
+    "errors": {
+      "validation": "Veuillez saisir un commentaire valide (au moins 3 caractères).",
+      "generic": "Impossible d'envoyer votre commentaire. Veuillez réessayer."
+    }
+  },
+  "CommentModeration": {
+    "metadata": {
+      "title": "Modération des commentaires — Ahmed Al-Dah",
+      "description": "Examiner et modérer les commentaires des lecteurs."
+    },
+    "eyebrow": "Administration",
+    "title": "File de modération des commentaires",
+    "description": "Examinez les commentaires en attente et approuvez-les, rejetez-les ou marquez-les comme spam.",
+    "empty": "Aucun commentaire en attente de modération.",
+    "table": {
+      "comment": "Commentaire",
+      "article": "Article",
+      "date": "Date",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "actions": {
+      "approve": "Approuver",
+      "reject": "Rejeter",
+      "spam": "Spam"
+    },
+    "permission": {
+      "title": "Non autorisé",
+      "description": "Cette page est réservée aux administrateurs et modérateurs."
+    }
   }
 }
