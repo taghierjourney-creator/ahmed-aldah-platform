@@ -23,7 +23,7 @@ export default function ArticleCommentSection({
   initialComments,
 }: ArticleCommentSectionProps) {
   const t = useTranslations("Comments");
-  const [comments, setComments] = useState(initialComments);
+  const [comments, _setComments] = useState(initialComments);
   const [content, setContent] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>(null);
   const [isPending, startTransition] = useTransition();
