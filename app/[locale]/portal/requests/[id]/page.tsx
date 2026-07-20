@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
+import FileUpload from "@/components/FileUpload";
 import { getClientRequestById } from "@/actions/portal";
 import type { Locale } from "@/lib/locale";
 
@@ -149,6 +150,16 @@ export default async function ClientRequestPage({ params }: ClientRequestPagePro
               ))}
             </div>
           )}
+        </section>
+
+        <section className="rounded-[2rem] border border-foreground/10 bg-card p-8 shadow-sm">
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">{t("upload.title")}</h2>
+              <p className="mt-2 text-sm leading-6 text-foreground/75">{t("upload.description")}</p>
+            </div>
+            <FileUpload requestId={request.id} onUploaded={() => null} />
+          </div>
         </section>
       </section>
     </main>

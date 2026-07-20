@@ -136,6 +136,27 @@
       "sizeSuffix": "bytes",
       "uploadedAt": "Uploaded {date}"
     },
+    "upload": {
+      "title": "Upload a document",
+      "description": "Attach a PDF, Word, or Excel file to this request.",
+      "states": {
+        "validating": "Validating file…",
+        "scanning": "Scanning for threats…",
+        "complete": "Upload complete"
+      },
+      "hints": {
+        "maximumSize": "Maximum size: 10 MB",
+        "allowedTypes": "Supported formats: PDF, DOCX, XLSX"
+      },
+      "actions": {
+        "chooseFile": "Choose a file"
+      },
+      "errors": {
+        "fileTooLarge": "الملف أكبر من الحجم المسموح.",
+        "unsupportedType": "نوع الملف غير مدعوم.",
+        "uploadFailed": "الملف يحتوي على تهديد أمني أو فشل فحص الأمان"
+      }
+    },
     "actions": {
       "backToPortal": "Back to portal"
     },

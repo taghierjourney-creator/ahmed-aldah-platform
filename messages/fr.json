@@ -136,6 +136,27 @@
       "sizeSuffix": "octets",
       "uploadedAt": "Téléchargé le {date}"
     },
+    "upload": {
+      "title": "Télécharger un document",
+      "description": "Joignez un fichier PDF, Word ou Excel à cette demande.",
+      "states": {
+        "validating": "Validation du fichier…",
+        "scanning": "Analyse des menaces…",
+        "complete": "Téléchargement terminé"
+      },
+      "hints": {
+        "maximumSize": "Taille maximale : 10 Mo",
+        "allowedTypes": "Formats pris en charge : PDF, DOCX, XLSX"
+      },
+      "actions": {
+        "chooseFile": "Choisir un fichier"
+      },
+      "errors": {
+        "fileTooLarge": "Le fichier dépasse la taille autorisée.",
+        "unsupportedType": "Type de fichier non pris en charge.",
+        "uploadFailed": "Le fichier contient une menace de sécurité ou l'analyse a échoué."
+      }
+    },
     "actions": {
       "backToPortal": "Retour au portail"
     },

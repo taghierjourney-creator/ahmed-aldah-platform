@@ -19,19 +19,16 @@ enum Role {
 
 // NextAuth-compatible schema with role on the User model
 model User {
-  id                String    @id @default(cuid())
-  name              String?
-  email             String?   @unique
-  emailVerified     DateTime?
-  image             String?
-  role              Role      @default(USER)
-  twoFactorSecret   String?
-  twoFactorEnabled  Boolean   @default(false)
-  accounts          Account[]
-  sessions          Session[]
-  requests          ClientRequest[]
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime @updatedAt
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(USER)
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Client {
@@ -66,45 +63,8 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  mfaVerifiedAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-enum RequestStatus {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-  REJECTED
-}
-
-model ClientRequest {
-  id          String          @id @default(cuid())
-  title       String
-  description String
-  status      RequestStatus   @default(PENDING)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  userId      String
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  documents   Document[]
-
-  @@index([userId])
-}
-
-model Document {
-  id              String        @id @default(cuid())
-  fileKey         String
-  originalName    String
-  mimeType        String
-  size            Int
-  createdAt       DateTime      @default(now())
-  clientRequestId String
-  clientRequest   ClientRequest @relation(fields: [clientRequestId], references: [id], onDelete: Cascade)
-
-  @@index([clientRequestId])
 }
 
 model VerificationToken {

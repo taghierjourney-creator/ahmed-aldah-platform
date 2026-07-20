@@ -4,8 +4,6 @@ import db from "@/lib/db";
 import ArticleCard from "@/components/ArticleCard";
 import SmartSearch from "@/components/SmartSearch";
 
-export const dynamic = "force-dynamic";
-
 type BlogPageProps = {
   params: {
     locale: string;

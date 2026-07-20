@@ -136,6 +136,27 @@
       "sizeSuffix": "بايت",
       "uploadedAt": "تم التحميل {date}"
     },
+    "upload": {
+      "title": "تحميل مستند",
+      "description": "أرفق ملف PDF أو Word أو Excel بهذا الطلب.",
+      "states": {
+        "validating": "جاري التحقق من الملف…",
+        "scanning": "جاري فحص التهديدات…",
+        "complete": "تم التحميل"
+      },
+      "hints": {
+        "maximumSize": "أقصى حجم: 10 ميجابايت",
+        "allowedTypes": "الصيغ المدعومة: PDF، DOCX، XLSX"
+      },
+      "actions": {
+        "chooseFile": "اختر ملفًا"
+      },
+      "errors": {
+        "fileTooLarge": "الملف أكبر من الحجم المسموح.",
+        "unsupportedType": "نوع الملف غير مدعوم.",
+        "uploadFailed": "الملف يحتوي على تهديد أمني أو فشل فحص الأمان"
+      }
+    },
     "actions": {
       "backToPortal": "الرجوع إلى البوابة"
     },
