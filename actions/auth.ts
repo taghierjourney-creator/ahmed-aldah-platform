@@ -2,6 +2,7 @@
 
 import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 import db from "@/lib/db";
 import { decryptMfaSecret, encryptMfaSecret } from "@/lib/mfa-crypto";
@@ -226,4 +227,18 @@ export async function expireIdleSession() {
   cookieStore.delete("authjs.session-token");
 
   return { success: true };
+}
+
+export async function logout(locale: string) {
+  const session = await getAuthenticatedSessionRecord();
+
+  if (session) {
+    await db.session.delete({ where: { id: session.id } });
+  }
+
+  const cookieStore = await cookies();
+  cookieStore.delete("authjs.session-token");
+  cookieStore.delete(PENDING_MFA_COOKIE_NAME);
+
+  redirect(`/${locale}/login`);
 }

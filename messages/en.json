@@ -101,6 +101,34 @@
     "eyebrow": "Client portal",
     "title": "Your requests",
     "description": "Review your active requests and open details for documents and status information.",
+    "hero": {
+      "eyebrow": "Secure workspace",
+      "title": "Welcome back, client",
+      "description": "Track your requests, review documents, and stay up to date with your service progress."
+    },
+    "sidebar": {
+      "title": "Portal navigation",
+      "links": {
+        "requests": "Recent requests",
+        "documents": "Documents",
+        "profile": "Profile"
+      }
+    },
+    "requests": {
+      "title": "Recent requests",
+      "description": "Review the latest requests linked to your account."
+    },
+    "profile": {
+      "title": "Profile summary",
+      "description": "Your portal access is protected and limited to your own records.",
+      "summary": "Account scope",
+      "value": "Personal client workspace"
+    },
+    "documents": {
+      "title": "Documents",
+      "description": "Upload and review supporting files for your requests.",
+      "placeholder": "Document history will appear here as soon as files are attached to your requests."
+    },
     "timestamps": {
       "updatedAt": "Updated {date}"
     },
@@ -163,6 +191,87 @@
     "errors": {
       "title": "Request unavailable",
       "unavailable": "This request cannot be displayed. Please verify your access and try again."
+    }
+  },
+  "Common": {
+    "logout": "Logout",
+    "signingOut": "Signing out…"
+  },
+  "Login": {
+    "metadata": {
+      "title": "Secure sign in",
+      "description": "Sign in to access your client portal and admin workspace."
+    },
+    "eyebrow": "Access portal",
+    "hero": {
+      "title": "Secure access for clients and administrators",
+      "description": "Use your trusted GitHub sign-in to access the right workspace for your account."
+    },
+    "title": "Continue to your workspace",
+    "description": "Use your organization account to continue securely.",
+    "actions": {
+      "signInWithGithub": "Continue with GitHub"
+    },
+    "states": {
+      "signingIn": "Opening your workspace…"
+    },
+    "support": "You will be redirected to the appropriate dashboard after authentication.",
+    "errors": {
+      "authFailed": "We could not start your sign-in session. Please try again."
+    },
+    "security": {
+      "title": "Protected by enterprise security",
+      "items": {
+        "mfa": "Admin access requires MFA verification.",
+        "session": "Sessions are revoked on logout and idle timeout.",
+        "access": "Every portal route is checked server-side before loading."
+      }
+    }
+  },
+  "AdminDashboard": {
+    "metadata": {
+      "title": "Admin dashboard",
+      "description": "Review operations and manage secure access."
+    },
+    "eyebrow": "Administration",
+    "title": "Admin dashboard",
+    "hero": {
+      "eyebrow": "Operations overview",
+      "title": "Monitor your secure workspace",
+      "description": "Use this dashboard to keep track of active requests, privileged workflows, and guardrails."
+    },
+    "navigation": {
+      "overview": "Overview",
+      "stats": "Statistics",
+      "activity": "Activity"
+    },
+    "overview": {
+      "title": "Workspace overview",
+      "description": "The administrator console is ready for monitoring and workflow operations.",
+      "cards": {
+        "requests": "Open requests",
+        "documents": "Documents pending review"
+      }
+    },
+    "summary": {
+      "title": "Security summary",
+      "description": "MFA, session timeout, and role-based access remain enforced on every protected route."
+    },
+    "stats": {
+      "title": "Operational statistics",
+      "description": "The dashboard shell is ready for future operational metrics.",
+      "items": {
+        "active": "Active sessions",
+        "pending": "Pending tasks",
+        "resolved": "Resolved cases"
+      }
+    },
+    "activity": {
+      "title": "Recent activity",
+      "description": "Recent protected actions will appear here as the platform expands."
+    },
+    "actions": {
+      "openPortal": "Open client portal"
     }
   },
   "Comments": {

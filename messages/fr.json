@@ -101,6 +101,34 @@
     "eyebrow": "Portail client",
     "title": "Vos demandes",
     "description": "Consultez vos demandes actives et ouvrez les détails pour les documents et l'état.",
+    "hero": {
+      "eyebrow": "Espace de travail sécurisé",
+      "title": "Bienvenue de retour, client",
+      "description": "Suivez vos demandes, consultez vos documents et restez informé de l’avancement de vos services."
+    },
+    "sidebar": {
+      "title": "Navigation du portail",
+      "links": {
+        "requests": "Demandes récentes",
+        "documents": "Documents",
+        "profile": "Profil"
+      }
+    },
+    "requests": {
+      "title": "Demandes récentes",
+      "description": "Consultez les dernières demandes liées à votre compte."
+    },
+    "profile": {
+      "title": "Résumé du profil",
+      "description": "Votre accès au portail est protégé et limité à vos propres dossiers.",
+      "summary": "Portée du compte",
+      "value": "Espace client personnel"
+    },
+    "documents": {
+      "title": "Documents",
+      "description": "Téléversez et consultez les fichiers joints à vos demandes.",
+      "placeholder": "L’historique des documents apparaîtra ici dès que des fichiers seront joints à vos demandes."
+    },
     "timestamps": {
       "updatedAt": "Mis à jour {date}"
     },
@@ -163,6 +191,83 @@
     "errors": {
       "title": "Demande indisponible",
       "unavailable": "Cette demande ne peut pas être affichée. Veuillez vérifier votre accès et réessayer."
+    }
+  },
+  "Common": {
+    "logout": "Se déconnecter",
+    "signingOut": "Déconnexion…"
+  },
+  "Login": {
+    "metadata": {
+      "title": "Connexion sécurisée",
+      "description": "Connectez-vous pour accéder à votre portail client et à votre espace d’administration."
+    },
+    "eyebrow": "Accès au portail",
+    "hero": {
+      "title": "Accès sécurisé pour les clients et les administrateurs",
+      "description": "Utilisez votre connexion GitHub pour accéder à l’espace adapté à votre compte."
+    },
+    "title": "Continuer vers votre espace de travail",
+    "description": "Utilisez votre compte d’organisation pour continuer en toute sécurité.",
+    "actions": {
+      "signInWithGithub": "Continuer avec GitHub"
+    },
+    "states": {
+      "signingIn": "Ouverture de votre espace…"
+    },
+    "support": "Vous serez redirigé vers le tableau de bord approprié après l’authentification.",
+    "errors": {
+      "authFailed": "Nous n’avons pas pu démarrer votre session de connexion. Veuillez réessayer."
+    },
+    "security": {
+      "title": "Protégé par une sécurité d’entreprise",
+      "items": {
+        "mfa": "L’accès administrateur requiert une vérification MFA.",
+        "session": "Les sessions sont révoquées à la déconnexion et à l’expiration du délai d’inactivité.",
+        "access": "Chaque route du portail est vérifiée côté serveur avant le chargement."
+      }
+    }
+  },
+  "AdminDashboard": {
+    "metadata": {
+      "title": "Tableau de bord administrateur",
+      "description": "Consultez les opérations et gérez l’accès sécurisé."
+    },
+    "eyebrow": "Administration",
+    "title": "Tableau de bord administrateur",
+    "hero": {
+      "eyebrow": "Aperçu des opérations",
+      "title": "Surveillez votre espace sécurisé",
+      "description": "Utilisez ce tableau de bord pour suivre les demandes actives, les workflows sensibles et les garde-fous de sécurité."
+    },
+    "navigation": {
+      "overview": "Vue d’ensemble",
+      "stats": "Statistiques",
+      "activity": "Activité"
+    },
+    "overview": {
+      "title": "Aperçu de l’espace de travail",
+      "description": "La console d’administration est prête pour le suivi des opérations et des workflows."
+    },
+    "summary": {
+      "title": "Résumé de sécurité",
+      "description": "La MFA, l’expiration des sessions et l’accès basé sur les rôles restent appliqués sur chaque route protégée."
+    },
+    "stats": {
+      "title": "Statistiques opérationnelles",
+      "description": "Le tableau de bord est prêt pour les métriques opérationnelles futures.",
+      "items": {
+        "active": "Sessions actives",
+        "pending": "Tâches en attente",
+        "resolved": "Cas résolus"
+      }
+    },
+    "activity": {
+      "title": "Activité récente",
+      "description": "Les actions protégées récentes apparaîtront ici à mesure que la plateforme s’étendra."
+    },
+    "actions": {
+      "openPortal": "Ouvrir le portail client"
     }
   },
   "Comments": {
