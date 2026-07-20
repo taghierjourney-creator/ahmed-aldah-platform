@@ -132,5 +132,64 @@
       "title": "Unauthorized",
       "description": "This page is available to administrators and moderators only."
     }
+  },
+  "MfaSetup": {
+    "metadata": {
+      "title": "Enable Two-Factor Authentication",
+      "description": "Set up two-factor authentication for your account."
+    },
+    "title": "Enable Two-Factor Authentication",
+    "description": "Enhance your account security by enabling two-factor authentication. Scan the QR code with an authenticator app, then enter the verification code.",
+    "step1": "Step 1: Scan the QR Code",
+    "step1Description": "Use Google Authenticator, Microsoft Authenticator, Authy, or any compatible authenticator app to scan the QR code below.",
+    "orManualEntry": "Or enter this code manually:",
+    "copyToClipboard": "Copy to clipboard",
+    "copied": "Copied!",
+    "step2": "Step 2: Verify the Code",
+    "form": {
+      "label": "Enter the 6-digit code",
+      "hint": "Enter the code displayed in your authenticator app",
+      "placeholder": "000000",
+      "verify": "Verify and Enable MFA",
+      "verifying": "Verifying…",
+      "invalidTokenFormat": "Please enter a valid 6-digit code."
+    },
+    "errors": {
+      "generic": "Failed to set up two-factor authentication. Please try again.",
+      "invalidCode": "The code you entered is invalid or has expired.",
+      "alreadyEnabled": "Two-factor authentication is already enabled for your account.",
+      "unauthorized": "You do not have permission to set up two-factor authentication."
+    },
+    "success": "Two-factor authentication has been enabled successfully."
+  },
+  "MfaVerify": {
+    "metadata": {
+      "title": "Verify Two-Factor Authentication",
+      "description": "Enter your two-factor authentication code to continue."
+    },
+    "title": "Verify Two-Factor Authentication",
+    "description": "Enter the 6-digit code from your authenticator app to verify your identity.",
+    "form": {
+      "label": "Enter the 6-digit code",
+      "hint": "Check your authenticator app for the code",
+      "placeholder": "000000",
+      "verify": "Verify Code",
+      "verifying": "Verifying…",
+      "invalidTokenFormat": "Please enter a valid 6-digit code."
+    },
+    "errors": {
+      "generic": "Failed to verify the code. Please try again.",
+      "invalidCode": "The code you entered is invalid or has expired.",
+      "unauthorized": "You do not have permission to verify at this time.",
+      "sessionExpired": "Your session has expired. Please sign in again."
+    }
+  },
+  "SessionMonitor": {
+    "warning": {
+      "title": "Session Expiring Soon",
+      "description": "Your session will expire in 1 minute due to inactivity. Click below to stay logged in.",
+      "dismiss": "Dismiss",
+      "logout": "Log Out Now"
+    }
   }
 }

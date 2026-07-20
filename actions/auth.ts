@@ -1,9 +1,13 @@
 "use server";
 
+import db from "@/lib/db";
 import { getServerSession } from "@/lib/auth";
+import { encryptMfaSecret, decryptMfaSecret } from "@/lib/mfa-crypto";
+import { generateTotpSecret, verifyTotpToken, generateQrCodeDataUrl, isValidTokenFormat } from "@/lib/totp";
 
 const ADMIN_EDITOR_ROLES = new Set(["ADMIN", "EDITOR"]);
 const ADMIN_MODERATOR_ROLES = new Set(["ADMIN", "MODERATOR"]);
+const ADMIN_ROLE = "ADMIN";
 
 export async function requireAdminOrEditor() {
   const session = await getServerSession();
@@ -39,98 +43,242 @@ export async function requireAdminOrModerator() {
   return session;
 }
 
-/**
- * Generate TOTP secret for two-factor authentication setup.
- * Placeholder for phase 3a implementation - MFA enrollment flow.
- *
- * @throws {Error} if user is not authenticated or lacks ADMIN role
- * @returns Promise with generated secret (encrypted in production)
- */
-export async function generateTOTPSecret() {
-  const session = await requireAdminOrEditor();
+export async function requireAdmin() {
+  const session = await getServerSession();
 
-  if (!session?.user?.email) {
-    throw new Error("User email required for TOTP setup");
+  if (!session?.user) {
+    throw new Error("Unauthorized");
   }
 
-  // TODO: Phase 3a implementation
-  // 1. Generate TOTP secret using speakeasy/otplib
-  // 2. Encrypt secret before storage (never store plaintext)
-  // 3. Return QR code URI for authenticator app enrollment
-  // 4. Validate with database transaction
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const role = String((session.user as any)?.role ?? "").toUpperCase();
 
-  throw new Error("TOTP setup not yet implemented");
+  if (role !== ADMIN_ROLE) {
+    throw new Error("Unauthorized");
+  }
+
+  return session;
 }
 
 /**
- * Verify TOTP token for two-factor authentication.
- * Placeholder for phase 3a implementation - MFA verification flow.
- *
- * @param _token - 6-digit TOTP token from authenticator app
- * @throws {Error} if token is invalid or user lacks MFA setup
- * @returns Promise<boolean> indicating verification success
+ * Generate a new TOTP secret for MFA setup.
+ * Returns encrypted secret (stored in DB) and QR code for scanning.
+ * Does NOT enable MFA yet—requires verification via verifyMfaSetup.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function verifyTOTPToken(_token: string): Promise<boolean> {
+export async function generateMfaSecret(): Promise<{
+  qrCode: string;
+  manualEntry: string;
+}> {
+  const session = await requireAdmin();
+
+  if (!session?.user?.email) {
+    throw new Error("User email required for MFA setup");
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (session.user as any)?.id;
+  if (!userId) {
+    throw new Error("User ID required");
+  }
+
+  const { secret, otpauth_url } = generateTotpSecret(session.user.email);
+
+  try {
+    const encrypted = encryptMfaSecret(secret);
+
+    await db.user.update({
+      where: { id: userId },
+      data: {
+        twoFactorSecret: encrypted,
+        twoFactorEnabled: false,
+      },
+    });
+
+    const qrCode = await generateQrCodeDataUrl(otpauth_url);
+
+    return {
+      qrCode,
+      manualEntry: secret,
+    };
+  } catch {
+    throw new Error("Failed to generate MFA secret");
+  }
+}
+
+/**
+ * Verify TOTP code during initial MFA setup.
+ * If valid, enables MFA. If invalid, keeps secret but MFA disabled.
+ */
+export async function verifyMfaSetup(token: string): Promise<void> {
+  if (!isValidTokenFormat(token)) {
+    throw new Error("Invalid token format");
+  }
+
+  const session = await requireAdmin();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (session.user as any)?.id;
+  if (!userId) {
+    throw new Error("User ID required");
+  }
+
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { twoFactorSecret: true, twoFactorEnabled: true },
+  });
+
+  if (!user || !user.twoFactorSecret || user.twoFactorEnabled) {
+    throw new Error("MFA setup not in progress or already enabled");
+  }
+
+  try {
+    const decrypted = decryptMfaSecret(user.twoFactorSecret);
+    const valid = verifyTotpToken(decrypted, token);
+
+    if (!valid) {
+      throw new Error("Invalid TOTP code");
+    }
+
+    await db.user.update({
+      where: { id: userId },
+      data: { twoFactorEnabled: true },
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === "Invalid TOTP code") {
+      throw error;
+    }
+    throw new Error("Failed to verify MFA setup");
+  }
+}
+
+/**
+ * Verify TOTP code during login (MFA challenge).
+ * On success, marks the session as MFA-verified.
+ */
+export async function verifyMfaCode(token: string): Promise<void> {
+  if (!isValidTokenFormat(token)) {
+    throw new Error("Invalid token format");
+  }
+
+  const session = await getServerSession();
+
+  if (!session?.user?.id || !session.mfaVerifiedAt === undefined) {
+    throw new Error("Invalid session state");
+  }
+
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { twoFactorSecret: true, twoFactorEnabled: true },
+  });
+
+  if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) {
+    throw new Error("MFA not enabled for user");
+  }
+
+  try {
+    const decrypted = decryptMfaSecret(user.twoFactorSecret);
+    const valid = verifyTotpToken(decrypted, token);
+
+    if (!valid) {
+      throw new Error("Invalid TOTP code");
+    }
+
+    // Update session with MFA verification timestamp
+    const cookieStore = await (await import("next/headers")).cookies();
+    const sessionToken = cookieStore.get("authjs.session-token")?.value;
+
+    if (sessionToken) {
+      await db.session.update({
+        where: { sessionToken },
+        data: { mfaVerifiedAt: new Date() },
+      });
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message === "Invalid TOTP code") {
+      throw error;
+    }
+    throw new Error("Failed to verify MFA code");
+  }
+}
+
+/**
+ * Disable MFA for the current user.
+ * Clears the encrypted secret and disables the flag.
+ */
+export async function disableMfa(): Promise<void> {
+  const session = await requireAdmin();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (session.user as any)?.id;
+  if (!userId) {
+    throw new Error("User ID required");
+  }
+
+  try {
+    await db.user.update({
+      where: { id: userId },
+      data: {
+        twoFactorSecret: null,
+        twoFactorEnabled: false,
+      },
+    });
+
+    await db.session.deleteMany({
+      where: { userId },
+    });
+  } catch {
+    throw new Error("Failed to disable MFA");
+  }
+}
+
+/**
+ * Logout the current session securely.
+ * Deletes the session from the database.
+ */
+export async function logoutSession(): Promise<void> {
   const session = await getServerSession();
 
   if (!session?.user?.id) {
-    throw new Error("Unauthenticated");
+    return;
   }
 
-  // TODO: Phase 3a implementation
-  // 1. Retrieve user's encrypted TOTP secret from database
-  // 2. Decrypt secret (production: use encryption service)
-  // 3. Verify token window (±30 seconds per RFC 6238)
-  // 4. Prevent token replay by tracking verified tokens
-  // 5. Return verification result
+  try {
+    const cookieStore = await (await import("next/headers")).cookies();
+    const sessionToken = cookieStore.get("authjs.session-token")?.value;
 
-  throw new Error("TOTP verification not yet implemented");
+    if (sessionToken) {
+      await db.session.delete({
+        where: { sessionToken },
+      });
+    }
+  } catch {
+    // Silently fail—session already deleted or doesn't exist
+  }
 }
 
 /**
- * Enable two-factor authentication for user account.
- * Placeholder for phase 3a implementation.
- *
- * @param _verificationToken - validated TOTP token confirming setup
- * @throws {Error} if verification fails or user lacks ADMIN role
+ * Mark the current session as idle-expired.
+ * Used by idle timeout provider to invalidate on client side too.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function enableTwoFactor(_verificationToken: string) {
-  const session = await requireAdminOrEditor();
+export async function expireIdleSession(): Promise<void> {
+  const session = await getServerSession();
 
   if (!session?.user?.id) {
-    throw new Error("User ID required");
+    return;
   }
 
-  // TODO: Phase 3a implementation
-  // 1. Verify TOTP token matches stored secret
-  // 2. Update user.twoFactorEnabled flag in database
-  // 3. Audit log: MFA enabled by user
-  // 4. Return success confirmation
+  try {
+    const cookieStore = await (await import("next/headers")).cookies();
+    const sessionToken = cookieStore.get("authjs.session-token")?.value;
 
-  throw new Error("MFA enablement not yet implemented");
-}
-
-/**
- * Disable two-factor authentication for user account.
- * Placeholder for phase 3a implementation.
- *
- * @throws {Error} if user lacks ADMIN role or MFA not enabled
- */
-export async function disableTwoFactor() {
-  const session = await requireAdminOrEditor();
-
-  if (!session?.user?.id) {
-    throw new Error("User ID required");
+    if (sessionToken) {
+      // Set expiration to now to immediately invalidate
+      await db.session.update({
+        where: { sessionToken },
+        data: { expires: new Date() },
+      });
+    }
+  } catch {
+    // Silently fail
   }
-
-  // TODO: Phase 3a implementation
-  // 1. Clear user.twoFactorSecret and set twoFactorEnabled = false
-  // 2. Invalidate all active sessions for security
-  // 3. Audit log: MFA disabled by user
-  // 4. Notify user of MFA removal via email
-
-  throw new Error("MFA disablement not yet implemented");
 }
-

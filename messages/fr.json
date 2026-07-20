@@ -132,5 +132,64 @@
       "title": "Non autorisé",
       "description": "Cette page est réservée aux administrateurs et modérateurs."
     }
+  },
+  "MfaSetup": {
+    "metadata": {
+      "title": "Activer l'authentification à deux facteurs",
+      "description": "Configurer l'authentification à deux facteurs pour votre compte."
+    },
+    "title": "Activer l'authentification à deux facteurs",
+    "description": "Renforcez la sécurité de votre compte en activant l'authentification à deux facteurs. Scannez le code QR avec une application d'authentification, puis saisissez le code de vérification.",
+    "step1": "Étape 1 : Scannez le code QR",
+    "step1Description": "Utilisez Google Authenticator, Microsoft Authenticator, Authy ou toute autre application d'authentification compatible pour scanner le code QR ci-dessous.",
+    "orManualEntry": "Ou saisissez ce code manuellement :",
+    "copyToClipboard": "Copier dans le presse-papiers",
+    "copied": "Copié !",
+    "step2": "Étape 2 : Vérifier le code",
+    "form": {
+      "label": "Saisissez le code à 6 chiffres",
+      "hint": "Saisissez le code affiché dans votre application d'authentification",
+      "placeholder": "000000",
+      "verify": "Vérifier et activer l'authentification à deux facteurs",
+      "verifying": "Vérification en cours…",
+      "invalidTokenFormat": "Veuillez saisir un code valide à 6 chiffres."
+    },
+    "errors": {
+      "generic": "Impossible de configurer l'authentification à deux facteurs. Veuillez réessayer.",
+      "invalidCode": "Le code que vous avez saisi est invalide ou a expiré.",
+      "alreadyEnabled": "L'authentification à deux facteurs est déjà activée pour votre compte.",
+      "unauthorized": "Vous n'avez pas les permissions nécessaires pour configurer l'authentification à deux facteurs."
+    },
+    "success": "L'authentification à deux facteurs a été activée avec succès."
+  },
+  "MfaVerify": {
+    "metadata": {
+      "title": "Vérifier l'authentification à deux facteurs",
+      "description": "Saisissez votre code d'authentification à deux facteurs pour continuer."
+    },
+    "title": "Vérifier l'authentification à deux facteurs",
+    "description": "Saisissez le code à 6 chiffres de votre application d'authentification pour vérifier votre identité.",
+    "form": {
+      "label": "Saisissez le code à 6 chiffres",
+      "hint": "Consultez votre application d'authentification pour trouver le code",
+      "placeholder": "000000",
+      "verify": "Vérifier le code",
+      "verifying": "Vérification en cours…",
+      "invalidTokenFormat": "Veuillez saisir un code valide à 6 chiffres."
+    },
+    "errors": {
+      "generic": "Impossible de vérifier le code. Veuillez réessayer.",
+      "invalidCode": "Le code que vous avez saisi est invalide ou a expiré.",
+      "unauthorized": "Vous n'avez pas les permissions pour vérifier à ce moment.",
+      "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter."
+    }
+  },
+  "SessionMonitor": {
+    "warning": {
+      "title": "Fin de session prochaine",
+      "description": "Votre session se terminera dans 1 minute en raison de l'inactivité. Cliquez ci-dessous pour rester connecté.",
+      "dismiss": "Fermer",
+      "logout": "Quitter maintenant"
+    }
   }
 }
