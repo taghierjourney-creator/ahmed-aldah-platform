@@ -1,8 +1,19 @@
 ﻿"use server";
 
 import { cookies } from "next/headers";
-import type { Session } from "next-auth";
 import db from "@/lib/db";
+
+export type AuthSession = {
+  user?: {
+    id?: string;
+    email?: string | null;
+    name?: string | null;
+    image?: string | null;
+    role?: string | null;
+  } | null;
+  expires?: string;
+  mfaVerifiedAt?: Date;
+};
 
 /**
  * Get the current server session with MFA verification status.
@@ -10,7 +21,7 @@ import db from "@/lib/db";
  *
  * @returns Current session with user data or null if not authenticated
  */
-export async function getServerSession(): Promise<(Session & { mfaVerifiedAt?: Date }) | null> {
+export async function getServerSession(): Promise<AuthSession | null> {
   try {
     const cookieStore = await cookies();
     const sessionToken = cookieStore.get("authjs.session-token")?.value;
@@ -44,5 +55,3 @@ export async function getServerSession(): Promise<(Session & { mfaVerifiedAt?: D
     return null;
   }
 }
-
-

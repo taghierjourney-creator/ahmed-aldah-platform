@@ -1,16 +1,93 @@
 "use server";
 
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/auth";
+import { createHmac, timingSafeEqual } from "crypto";
+import { cookies } from "next/headers";
+
+import db from "@/lib/db";
+import { decryptMfaSecret, encryptMfaSecret } from "@/lib/mfa-crypto";
+import { generateQrCodeDataUrl, generateTotpSecret, isValidTokenFormat, verifyTotpToken } from "@/lib/totp";
+import { getServerSession } from "@/lib/auth";
 
 const ADMIN_EDITOR_ROLES = new Set(["ADMIN", "EDITOR"]);
 const ADMIN_MODERATOR_ROLES = new Set(["ADMIN", "MODERATOR"]);
+const PENDING_MFA_COOKIE_NAME = "mfa-pending-secret";
+const PENDING_MFA_COOKIE_MAX_AGE = 60 * 15;
+
+function getSigningSecret(): string {
+  const secret = process.env.MFA_ENCRYPTION_SECRET || process.env.NEXTAUTH_SECRET;
+
+  if (!secret) {
+    throw new Error("Authentication configuration is incomplete");
+  }
+
+  return secret;
+}
+
+function signPayload(payload: string): string {
+  const signature = createHmac("sha256", getSigningSecret()).update(payload).digest("hex");
+  return `${payload}.${signature}`;
+}
+
+function verifySignedPayload(value: string): string | null {
+  const delimiterIndex = value.lastIndexOf(".");
+
+  if (delimiterIndex <= 0) {
+    return null;
+  }
+
+  const payload = value.slice(0, delimiterIndex);
+  const signature = value.slice(delimiterIndex + 1);
+  const expectedSignature = createHmac("sha256", getSigningSecret()).update(payload).digest("hex");
+
+  try {
+    const provided = Buffer.from(signature, "hex");
+    const expected = Buffer.from(expectedSignature, "hex");
+
+    if (provided.length !== expected.length) {
+      return null;
+    }
+
+    timingSafeEqual(provided, expected);
+  } catch {
+    return null;
+  }
+
+  return payload;
+}
+
+async function getAuthenticatedSessionRecord() {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get("authjs.session-token")?.value;
+
+  if (!sessionToken) {
+    return null;
+  }
+
+  const session = await db.session.findUnique({
+    where: { sessionToken },
+    include: { user: true },
+  });
+
+  if (!session) {
+    return null;
+  }
+
+  if (session.expires < new Date()) {
+    await db.session.delete({ where: { id: session.id } });
+    return null;
+  }
+
+  return session;
+}
+
+async function clearPendingMfaCookie() {
+  const cookieStore = await cookies();
+  cookieStore.delete(PENDING_MFA_COOKIE_NAME);
+}
 
 export async function requireAdminOrEditor() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const session = await getServerSession(authOptions as unknown as any);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const role = String((session as any)?.user?.role ?? "").toUpperCase();
+  const session = await getServerSession();
+  const role = String(session?.user?.role ?? "").toUpperCase();
 
   if (!ADMIN_EDITOR_ROLES.has(role)) {
     throw new Error("Unauthorized");
@@ -20,14 +97,133 @@ export async function requireAdminOrEditor() {
 }
 
 export async function requireAdminOrModerator() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const session = await getServerSession(authOptions as unknown as any);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const role = String((session as any)?.user?.role ?? "").toUpperCase();
+  const session = await getServerSession();
+  const role = String(session?.user?.role ?? "").toUpperCase();
 
   if (!ADMIN_MODERATOR_ROLES.has(role)) {
     throw new Error("Unauthorized");
   }
 
   return session;
+}
+
+export async function generateMfaSecret() {
+  const session = await getAuthenticatedSessionRecord();
+
+  if (!session?.user?.email) {
+    throw new Error("Unauthorized");
+  }
+
+  const { secret, otpauth_url } = generateTotpSecret(session.user.email);
+  const encryptedSecret = encryptMfaSecret(secret);
+  const signedSecret = signPayload(encryptedSecret);
+
+  const cookieStore = await cookies();
+  cookieStore.set(PENDING_MFA_COOKIE_NAME, signedSecret, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: PENDING_MFA_COOKIE_MAX_AGE,
+  });
+
+  const qrCode = await generateQrCodeDataUrl(otpauth_url);
+
+  return {
+    qrCode,
+    manualEntry: secret,
+  };
+}
+
+export async function verifyMfaSetup(token: string) {
+  const session = await getAuthenticatedSessionRecord();
+
+  if (!session?.user) {
+    throw new Error("Unauthorized");
+  }
+
+  if (!isValidTokenFormat(token)) {
+    throw new Error("Invalid MFA code");
+  }
+
+  if (session.user.twoFactorEnabled) {
+    throw new Error("MFA is already enabled");
+  }
+
+  const cookieStore = await cookies();
+  const pendingSecret = cookieStore.get(PENDING_MFA_COOKIE_NAME)?.value;
+
+  if (!pendingSecret) {
+    throw new Error("MFA setup session expired");
+  }
+
+  const signedPayload = verifySignedPayload(pendingSecret);
+
+  if (!signedPayload) {
+    throw new Error("Invalid MFA setup session");
+  }
+
+  const decryptedSecret = decryptMfaSecret(signedPayload);
+
+  if (!verifyTotpToken(decryptedSecret, token)) {
+    throw new Error("Invalid MFA code");
+  }
+
+  await db.user.update({
+    where: { id: session.user.id },
+    data: {
+      twoFactorEnabled: true,
+      twoFactorSecret: signedPayload,
+    },
+  });
+
+  await clearPendingMfaCookie();
+
+  return { success: true };
+}
+
+export async function verifyMfaCode(token: string) {
+  const session = await getAuthenticatedSessionRecord();
+
+  if (!session?.user) {
+    throw new Error("Unauthorized");
+  }
+
+  if (!isValidTokenFormat(token)) {
+    throw new Error("Invalid MFA code");
+  }
+
+  if (!session.user.twoFactorEnabled || !session.user.twoFactorSecret) {
+    throw new Error("MFA is not enabled");
+  }
+
+  const decryptedSecret = decryptMfaSecret(session.user.twoFactorSecret);
+
+  if (!verifyTotpToken(decryptedSecret, token)) {
+    throw new Error("Invalid MFA code");
+  }
+
+  await db.session.update({
+    where: { id: session.id },
+    data: {
+      mfaVerifiedAt: new Date(),
+    },
+  });
+
+  return { success: true };
+}
+
+export async function expireIdleSession() {
+  const session = await getAuthenticatedSessionRecord();
+
+  if (!session) {
+    return { success: true };
+  }
+
+  await db.session.delete({ where: { id: session.id } });
+
+  const cookieStore = await cookies();
+  cookieStore.delete("authjs.session-token");
+
+  return { success: true };
 }

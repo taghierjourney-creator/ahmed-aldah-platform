@@ -17,18 +17,29 @@ enum Role {
   CLIENT
 }
 
+enum RequestStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
 // NextAuth-compatible schema with role on the User model
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  role          Role      @default(USER)
-  accounts      Account[]
-  sessions      Session[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id               String         @id @default(cuid())
+  name             String?
+  email            String?        @unique
+  emailVerified    DateTime?
+  image            String?
+  role             Role           @default(USER)
+  twoFactorSecret  String?
+  twoFactorEnabled Boolean        @default(false)
+  accounts         Account[]
+  sessions         Session[]
+  requests         ClientRequest[]
+  documents        Document[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 }
 
 model Client {
@@ -59,12 +70,42 @@ model Account {
 }
 
 model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
+  id            String    @id @default(cuid())
+  sessionToken  String    @unique
+  userId        String
+  expires       DateTime
+  mfaVerifiedAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ClientRequest {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  status      RequestStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents   Document[]
+
+  @@index([userId])
+}
+
+model Document {
+  id           String        @id @default(cuid())
+  storagePath  String        @unique
+  originalName String
+  mimeType     String
+  size         Int
+  createdAt    DateTime      @default(now())
+  requestId    String
+  userId       String
+  clientRequest ClientRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
 }
 
 model VerificationToken {
