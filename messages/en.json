@@ -93,6 +93,57 @@
       "rateLimit": "You have exceeded the allowed number of attempts. Please wait before trying again."
     }
   },
+  "Portal": {
+    "metadata": {
+      "title": "Client Portal",
+      "description": "View and manage your service requests securely."
+    },
+    "eyebrow": "Client portal",
+    "title": "Your requests",
+    "description": "Review your active requests and open details for documents and status information.",
+    "timestamps": {
+      "updatedAt": "Updated {date}"
+    },
+    "emptyTitle": "No requests found",
+    "emptyDescription": "You do not have any active client requests yet.",
+    "errors": {
+      "title": "Access denied",
+      "unauthorized": "You must sign in to view your client requests."
+    },
+    "status": {
+      "PENDING": "Pending",
+      "IN_PROGRESS": "In progress",
+      "COMPLETED": "Completed",
+      "REJECTED": "Rejected"
+    }
+  },
+  "PortalRequest": {
+    "metadata": {
+      "title": "Request details",
+      "description": "View request details and attached documents."
+    },
+    "eyebrow": "Client portal",
+    "statusLabel": "Request status",
+    "fields": {
+      "description": "Description",
+      "createdAt": "Created",
+      "updatedAt": "Last updated"
+    },
+    "documents": {
+      "title": "Documents",
+      "description": "Files attached to this request.",
+      "empty": "No documents have been attached to this request.",
+      "sizeSuffix": "bytes",
+      "uploadedAt": "Uploaded {date}"
+    },
+    "actions": {
+      "backToPortal": "Back to portal"
+    },
+    "errors": {
+      "title": "Request unavailable",
+      "unavailable": "This request cannot be displayed. Please verify your access and try again."
+    }
+  },
   "Comments": {
     "title": "Comments",
     "description": "Share your thoughts. All comments are reviewed before publication.",

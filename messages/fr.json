@@ -93,6 +93,57 @@
       "rateLimit": "Vous avez dépassé le nombre de tentatives autorisées. Veuillez patienter avant de réessayer."
     }
   },
+  "Portal": {
+    "metadata": {
+      "title": "Portail client",
+      "description": "Affichez et gérez vos demandes de service en toute sécurité."
+    },
+    "eyebrow": "Portail client",
+    "title": "Vos demandes",
+    "description": "Consultez vos demandes actives et ouvrez les détails pour les documents et l'état.",
+    "timestamps": {
+      "updatedAt": "Mis à jour {date}"
+    },
+    "emptyTitle": "Aucune demande trouvée",
+    "emptyDescription": "Vous n'avez pas encore de demandes client actives.",
+    "errors": {
+      "title": "Accès refusé",
+      "unauthorized": "Vous devez vous connecter pour afficher vos demandes client."
+    },
+    "status": {
+      "PENDING": "En attente",
+      "IN_PROGRESS": "En cours",
+      "COMPLETED": "Terminé",
+      "REJECTED": "Rejeté"
+    }
+  },
+  "PortalRequest": {
+    "metadata": {
+      "title": "Détails de la demande",
+      "description": "Affichez les détails de la demande et les documents joints."
+    },
+    "eyebrow": "Portail client",
+    "statusLabel": "Statut de la demande",
+    "fields": {
+      "description": "Description",
+      "createdAt": "Créé le",
+      "updatedAt": "Dernière mise à jour"
+    },
+    "documents": {
+      "title": "Documents",
+      "description": "Fichiers attachés à cette demande.",
+      "empty": "Aucun document n'a été joint à cette demande.",
+      "sizeSuffix": "octets",
+      "uploadedAt": "Téléchargé le {date}"
+    },
+    "actions": {
+      "backToPortal": "Retour au portail"
+    },
+    "errors": {
+      "title": "Demande indisponible",
+      "unavailable": "Cette demande ne peut pas être affichée. Veuillez vérifier votre accès et réessayer."
+    }
+  },
   "Comments": {
     "title": "Commentaires",
     "description": "Partagez votre avis. Tous les commentaires sont examinés avant publication.",
