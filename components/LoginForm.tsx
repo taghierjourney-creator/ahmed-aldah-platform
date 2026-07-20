@@ -1,46 +1,37 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { signIn } from "next-auth/react";
+import { FormEvent, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { requestLoginLink } from "@/actions/auth";
 import type { Locale } from "@/lib/locale";
 
 type LoginFormProps = {
   locale: Locale;
+  serverError?: string | null;
 };
 
-export default function LoginForm({ locale }: LoginFormProps) {
+export default function LoginForm({ locale, serverError }: LoginFormProps) {
   const t = useTranslations("Login");
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | null>(serverError ?? null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isPending, setIsPending] = useState(false);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setSuccessMessage(null);
+    setIsPending(true);
 
-    startTransition(async () => {
-      try {
-        const result = await signIn("github", {
-          callbackUrl: `/${locale}/portal`,
-          redirect: false,
-        });
-
-        if (result?.error) {
-          setError(t("errors.authFailed"));
-          return;
-        }
-
-        if (result?.url) {
-          window.location.assign(result.url);
-          return;
-        }
-
-        setError(t("errors.authFailed"));
-      } catch {
-        setError(t("errors.authFailed"));
-      }
-    });
+    try {
+      await requestLoginLink(email.trim(), locale);
+      setSuccessMessage(t("states.linkSent"));
+    } catch {
+      setError(t("errors.authFailed"));
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (
@@ -63,15 +54,37 @@ export default function LoginForm({ locale }: LoginFormProps) {
         </div>
       ) : null}
 
+      {successMessage ? (
+        <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700">
+          {successMessage}
+        </div>
+      ) : null}
+
+      <div className="space-y-4">
+        <label htmlFor="login-email" className="block text-sm font-medium text-foreground">
+          {t("form.emailLabel")}
+        </label>
+        <input
+          id="login-email"
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder={t("form.emailPlaceholder")}
+          disabled={isPending}
+          required
+          className="w-full rounded-[1.25rem] border border-foreground/10 bg-background px-4 py-3 text-foreground placeholder-foreground/50 focus:outline-none focus:ring-2 focus:ring-foreground/30"
+        />
+      </div>
+
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isPending || !email.trim()}
         className="flex w-full items-center justify-center gap-3 rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background transition hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-70"
       >
         {isPending ? (
           <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-background/70 border-t-transparent" />
         ) : null}
-        {isPending ? t("states.signingIn") : t("actions.signInWithGithub")}
+        {isPending ? t("states.sendingLink") : t("actions.sendLoginLink")}
       </button>
 
       <p className="text-xs leading-6 text-foreground/60">

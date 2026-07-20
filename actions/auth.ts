@@ -1,18 +1,23 @@
 "use server";
 
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import db from "@/lib/db";
 import { decryptMfaSecret, encryptMfaSecret } from "@/lib/mfa-crypto";
 import { generateQrCodeDataUrl, generateTotpSecret, isValidTokenFormat, verifyTotpToken } from "@/lib/totp";
+import { sendTransactionalEmail } from "@/lib/email";
 import { getServerSession } from "@/lib/auth";
 
 const ADMIN_EDITOR_ROLES = new Set(["ADMIN", "EDITOR"]);
 const ADMIN_MODERATOR_ROLES = new Set(["ADMIN", "MODERATOR"]);
 const PENDING_MFA_COOKIE_NAME = "mfa-pending-secret";
 const PENDING_MFA_COOKIE_MAX_AGE = 60 * 15;
+const LOGIN_TOKEN_EXPIRY_SECONDS = 60 * 15;
+const SESSION_MAX_AGE = 24 * 60 * 60;
+const LOGIN_TOKEN_PATTERN = /^[0-9a-f]{48}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function getSigningSecret(): string {
   const secret = process.env.MFA_ENCRYPTION_SECRET || process.env.NEXTAUTH_SECRET;
@@ -84,6 +89,120 @@ async function getAuthenticatedSessionRecord() {
 async function clearPendingMfaCookie() {
   const cookieStore = await cookies();
   cookieStore.delete(PENDING_MFA_COOKIE_NAME);
+}
+
+function normalizeEmail(email: string): string {
+  return String(email).trim().toLowerCase();
+}
+
+function getAppUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://localhost:3000"
+  ).replace(/\/+$/, "");
+}
+
+function getSessionCookieName(): string {
+  return "authjs.session-token";
+}
+
+async function createSessionCookie(sessionToken: string, expiresInSeconds: number) {
+  const cookieStore = await cookies();
+  cookieStore.set(getSessionCookieName(), sessionToken, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: expiresInSeconds,
+  });
+}
+
+export async function requestLoginLink(email: string, locale: string) {
+  const normalizedEmail = normalizeEmail(email);
+  if (!EMAIL_PATTERN.test(normalizedEmail)) {
+    throw new Error("Authentication failed");
+  }
+
+  const user = await db.user.findUnique({
+    where: { email: normalizedEmail },
+  });
+
+  if (!user) {
+    throw new Error("Authentication failed");
+  }
+
+  const token = randomBytes(24).toString("hex");
+  const expires = new Date(Date.now() + LOGIN_TOKEN_EXPIRY_SECONDS * 1000);
+
+  await db.verificationToken.create({
+    data: {
+      identifier: normalizedEmail,
+      token,
+      expires,
+    },
+  });
+
+  const appUrl = getAppUrl();
+  const loginUrl = `${appUrl}/${encodeURIComponent(locale)}/login?token=${encodeURIComponent(token)}`;
+
+  const emailResult = await sendTransactionalEmail({
+    to: normalizedEmail,
+    subject: "Your secure sign-in link",
+    text: `Use this link to sign in: ${loginUrl}
+
+This link expires in 15 minutes. If you did not request this email, please ignore it.`,
+  });
+
+  if (!emailResult.ok) {
+    throw new Error("Authentication failed");
+  }
+}
+
+export async function verifyLoginToken(token: string, locale: string): Promise<string> {
+  if (!LOGIN_TOKEN_PATTERN.test(token)) {
+    throw new Error("Invalid login link");
+  }
+
+  const verificationToken = await db.verificationToken.findUnique({
+    where: { token },
+  });
+
+  if (!verificationToken || verificationToken.expires < new Date()) {
+    throw new Error("Invalid or expired login link");
+  }
+
+  const user = await db.user.findUnique({
+    where: { email: verificationToken.identifier },
+  });
+
+  if (!user) {
+    throw new Error("Invalid or expired login link");
+  }
+
+  const sessionToken = randomBytes(32).toString("hex");
+  const expires = new Date(Date.now() + SESSION_MAX_AGE * 1000);
+
+  await db.session.create({
+    data: {
+      sessionToken,
+      userId: user.id,
+      expires,
+      mfaVerifiedAt: user.twoFactorEnabled ? null : new Date(),
+    },
+  });
+
+  await createSessionCookie(sessionToken, SESSION_MAX_AGE);
+  await db.verificationToken.delete({ where: { token } });
+
+  const role = user.role;
+  if (role === "ADMIN" && user.twoFactorEnabled) {
+    return `/${locale}/admin/mfa-verify?callbackUrl=/${locale}/admin`;
+  }
+
+  if (role === "ADMIN") {
+    return `/${locale}/admin`;
+  }
+
+  return `/${locale}/portal`;
 }
 
 export async function requireAdminOrEditor() {

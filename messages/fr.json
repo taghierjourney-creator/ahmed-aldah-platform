@@ -210,14 +210,19 @@
     "title": "Continuer vers votre espace de travail",
     "description": "Utilisez votre compte d’organisation pour continuer en toute sécurité.",
     "actions": {
-      "signInWithGithub": "Continuer avec GitHub"
+      "sendLoginLink": "Envoyer le lien de connexion"
     },
     "states": {
-      "signingIn": "Ouverture de votre espace…"
+      "sendingLink": "Envoi du lien de connexion…",
+      "linkSent": "Un lien de connexion sécurisé a été envoyé à votre email."
     },
-    "support": "Vous serez redirigé vers le tableau de bord approprié après l’authentification.",
+    "form": {
+      "emailLabel": "Adresse email",
+      "emailPlaceholder": "prenom@exemple.com"
+    },
+    "support": "Vous recevrez un lien sécurisé pour accéder à votre espace.",
     "errors": {
-      "authFailed": "Nous n’avons pas pu démarrer votre session de connexion. Veuillez réessayer."
+      "authFailed": "Nous n’avons pas pu envoyer le lien de connexion. Veuillez réessayer."
     },
     "security": {
       "title": "Protégé par une sécurité d’entreprise",

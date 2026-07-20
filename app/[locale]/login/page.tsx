@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import LoginForm from "@/components/LoginForm";
+import { verifyLoginToken } from "@/actions/auth";
 import { getServerSession } from "@/lib/auth";
 import type { Locale } from "@/lib/locale";
 
@@ -10,6 +11,7 @@ export const dynamic = "force-dynamic";
 
 type LoginPageProps = {
   params: Promise<{ locale: string }>;
+  searchParams: { token?: string };
 };
 
 export async function generateMetadata({ params }: LoginPageProps): Promise<Metadata> {
@@ -22,7 +24,7 @@ export async function generateMetadata({ params }: LoginPageProps): Promise<Meta
   };
 }
 
-export default async function LoginPage({ params }: LoginPageProps) {
+export default async function LoginPage({ params, searchParams }: LoginPageProps) {
   const { locale } = await params;
   const typedLocale = locale as Locale;
 
@@ -41,6 +43,18 @@ export default async function LoginPage({ params }: LoginPageProps) {
     }
 
     redirect(`/${locale}/portal`);
+  }
+
+  let loginFormError: string | null = null;
+  const token = searchParams?.token;
+
+  if (token) {
+    try {
+      const redirectUrl = await verifyLoginToken(token, typedLocale);
+      redirect(redirectUrl);
+    } catch {
+      loginFormError = "Unable to verify this login link. Please request a new sign-in link.";
+    }
   }
 
   const t = await getTranslations("Login");
@@ -71,7 +85,7 @@ export default async function LoginPage({ params }: LoginPageProps) {
         </section>
 
         <div className="w-full max-w-md">
-          <LoginForm locale={typedLocale} />
+          <LoginForm locale={typedLocale} serverError={loginFormError} />
         </div>
       </div>
     </main>

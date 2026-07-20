@@ -210,14 +210,19 @@
     "title": "Continue to your workspace",
     "description": "Use your organization account to continue securely.",
     "actions": {
-      "signInWithGithub": "Continue with GitHub"
+      "sendLoginLink": "Send sign-in link"
     },
     "states": {
-      "signingIn": "Opening your workspace…"
+      "sendingLink": "Sending sign-in link…",
+      "linkSent": "A secure sign-in link has been sent to your email."
     },
-    "support": "You will be redirected to the appropriate dashboard after authentication.",
+    "form": {
+      "emailLabel": "Email address",
+      "emailPlaceholder": "name@example.com"
+    },
+    "support": "You will receive a secure link to continue to your workspace.",
     "errors": {
-      "authFailed": "We could not start your sign-in session. Please try again."
+      "authFailed": "We could not send your sign-in link. Please try again."
     },
     "security": {
       "title": "Protected by enterprise security",
