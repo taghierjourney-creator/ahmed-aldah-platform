@@ -15,6 +15,7 @@ enum Role {
   MODERATOR
   USER
   CLIENT
+  AUTHOR
 }
 
 enum RequestStatus {
@@ -31,13 +32,17 @@ model User {
   email            String?        @unique
   emailVerified    DateTime?
   image            String?
+  avatar           String?
+  bio              String?
   role             Role           @default(USER)
+  canPublish       Boolean        @default(false)
   twoFactorSecret  String?
   twoFactorEnabled Boolean        @default(false)
   accounts         Account[]
   sessions         Session[]
   requests         ClientRequest[]
   documents        Document[]
+  articles         Article[]
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 }
@@ -163,17 +168,32 @@ model Series {
   @@index([deletedAt])
 }
 
+enum ArticleStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+}
+
 model Article {
-  id                    String  @id @default(uuid())
+  id                    String       @id @default(uuid())
   title                 String
   slug                  String
-  content               String  @db.Text
-  published             Boolean @default(false)
+  excerpt               String?
+  coverImage            String?
+  content               String       @db.Text
+  audioUrl              String?
+  published             Boolean      @default(false)
+  status                ArticleStatus @default(DRAFT)
+  views                 Int          @default(0)
+  publishedAt           DateTime?
   locale                String
-  translationGroupId    String  @default(uuid())
-  normalizedTitle       String  @default("")
-  normalizedDescription String  @default("")
-  normalizedContent     String  @default("")
+  translationGroupId    String       @default(uuid())
+  normalizedTitle       String       @default("")
+  normalizedDescription String       @default("")
+  normalizedContent     String       @default("")
+
+  authorId String?
+  author   User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   categoryId String?
   category   Category? @relation("CategoryArticles", fields: [categoryId], references: [id], onDelete: SetNull)
@@ -254,4 +274,25 @@ model Comment {
 
   @@index([articleId])
   @@index([status])
+}
+
+model AuditLogEntry {
+  id          String   @id @default(cuid())
+  userId      String?
+  action      String
+  entity      String
+  entityId    String?
+  beforeState Json?
+  afterState  Json?
+  createdAt   DateTime @default(now())
+}
+
+model RedirectRule {
+  id        String   @id @default(cuid())
+  oldSlug   String
+  newSlug   String
+  locale    String
+  createdAt DateTime @default(now())
+
+  @@unique([locale, oldSlug])
 }

@@ -41,6 +41,8 @@ export default async function LocaleLayout({
   const direction = getDirection(typedLocale);
   const fontClass = typedLocale === "ar" ? "font-arabic" : "font-latin";
 
+  const analyticsDomain = process.env.NEXT_PUBLIC_ANALYTICS_DOMAIN || "plausible.example.com";
+
   return (
     <html
       lang={locale}
@@ -49,6 +51,10 @@ export default async function LocaleLayout({
     >
       <body className={`min-h-full flex flex-col ${fontClass}`}>
         <NextIntlClientProvider messages={messages}>
+          {/* Privacy-first cookieless analytics (Plausible). Uses external initializer to comply with CSP. */}
+          <script async defer data-domain={analyticsDomain} src="/analytics-init.js"></script>
+          <script async defer data-domain={analyticsDomain} src={`https://plausible.io/js/plausible.js`} />
+
           {children}
         </NextIntlClientProvider>
       </body>
