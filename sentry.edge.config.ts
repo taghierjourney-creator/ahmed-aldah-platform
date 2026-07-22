@@ -31,10 +31,22 @@ function scrubObject(obj: Record<string, unknown>) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function beforeSend(event: any): any | null {
+type SentryEvent = {
+  user?: unknown;
+  tags?: unknown;
+  contexts?: unknown;
+  extra?: unknown;
+  request?: unknown;
+  breadcrumbs?: unknown[];
+};
+
+function isSentryEvent(value: unknown): value is SentryEvent {
+  return isRecord(value);
+}
+
+function beforeSend(event: SentryEvent): SentryEvent {
   try {
-    const ev = event as { user?: unknown; tags?: unknown; contexts?: unknown; extra?: unknown; request?: unknown; breadcrumbs?: unknown[] };
+    const ev = event;
     if (ev.user) {
       const maybeUser = ev.user as unknown as Record<string, unknown>;
       if (typeof maybeUser["email"] === "string") maybeUser["email"] = "[REDACTED]";
@@ -58,7 +70,7 @@ function beforeSend(event: any): any | null {
   } catch (e) {
     void e;
   }
-  return event as unknown;
+  return event;
 }
 
 if (isProd) {
@@ -73,7 +85,7 @@ if (isProd) {
     // Edge runtime exposes addEventProcessor
     const maybe = Sentry as unknown as { addEventProcessor?: (fn: (ev: unknown) => unknown) => void };
     if (typeof maybe.addEventProcessor === "function") {
-      maybe.addEventProcessor((event: unknown) => beforeSend(event));
+      maybe.addEventProcessor((event: unknown) => (isSentryEvent(event) ? beforeSend(event) : event));
     }
   } catch (e) {
     void e;

@@ -20,9 +20,12 @@
     "test:a11y": "node tests/a11y/run-axe.js"
   },
   "dependencies": {
+    "@auth/core": "^0.41.3",
+    "@auth/prisma-adapter": "^2.11.3",
     "@prisma/client": "^5.12.0",
     "@sentry/nextjs": "^10.66.0",
     "next": "16.2.10",
+    "next-auth": "^5.0.0-beta.32",
     "next-intl": "^4.13.2",
     "qrcode": "^1.5.4",
     "react": "19.2.4",

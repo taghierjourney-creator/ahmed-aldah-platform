@@ -1,12 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useLocale } from "next-intl";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export default function TranslatePage() {
-  const locale = useLocale();
   const [sourceLang, setSourceLang] = useState("ar");
   const [targetLang, setTargetLang] = useState("en");
   const [sourceText, setSourceText] = useState("");
@@ -30,7 +28,7 @@ export default function TranslatePage() {
           <div className="w-1/2">
             <div className="mb-2 flex items-center gap-2">
               <label className="text-sm">المصدر</label>
-              <select value={sourceLang} onChange={(e) => setSourceLang(e.target.value)} className="ml-2 p-1 rounded border">
+              <select value={sourceLang} onChange={(e) => setSourceLang(e.target.value)} className="ms-2 rounded border p-1">
                 <option value="ar">Arabic</option>
                 <option value="en">English</option>
                 <option value="fr">Français</option>
@@ -46,7 +44,7 @@ export default function TranslatePage() {
           <div className="w-1/2">
             <div className="mb-2 flex items-center gap-2">
               <label className="text-sm">الهدف</label>
-              <select value={targetLang} onChange={(e) => setTargetLang(e.target.value)} className="ml-2 p-1 rounded border">
+              <select value={targetLang} onChange={(e) => setTargetLang(e.target.value)} className="ms-2 rounded border p-1">
                 <option value="ar">Arabic</option>
                 <option value="en">English</option>
                 <option value="fr">Français</option>

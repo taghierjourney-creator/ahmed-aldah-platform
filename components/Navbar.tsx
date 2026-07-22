@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useLocale } from "next-intl";
 
 export default function Navbar() {
-  const t = useTranslations("Home");
   const locale = useLocale();
   const [open, setOpen] = useState(false);
 

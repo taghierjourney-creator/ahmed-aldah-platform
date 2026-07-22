@@ -10,6 +10,7 @@ export type AuthSession = {
     name?: string | null;
     image?: string | null;
     role?: string | null;
+    canPublish?: boolean;
   } | null;
   expires?: string;
   mfaVerifiedAt?: Date;

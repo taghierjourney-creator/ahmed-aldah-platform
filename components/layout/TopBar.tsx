@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useLocale } from "next-intl";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const locales = [
   { value: "ar", label: "العربية" },
@@ -27,11 +26,9 @@ function Icon({ type }: { type: "phone" | "mail" }) {
 
 export default function TopBar() {
   const locale = useLocale();
-  const [dark, setDark] = useState(false);
-
-  useEffect(() => {
-    setDark(document.documentElement.classList.contains("dark"));
-  }, []);
+  const [dark, setDark] = useState(() =>
+    typeof document !== "undefined" && document.documentElement.classList.contains("dark"),
+  );
 
   function toggleTheme() {
     const nextDark = !dark;

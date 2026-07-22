@@ -108,8 +108,7 @@ export async function moderateComment(
   action: ModerationAction,
 ): Promise<ModerateCommentResult> {
   const session = await getServerSession();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const role = String((session?.user as any)?.role ?? "").toUpperCase();
+  const role = String(session?.user?.role ?? "").toUpperCase();
 
   if (!ADMIN_MODERATOR_ROLES.has(role)) {
     return { success: false, errorCode: "unauthorized" };

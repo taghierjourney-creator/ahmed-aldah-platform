@@ -31,15 +31,13 @@ export default async function MfaSetupPage({ params }: MfaSetupPageProps) {
   setRequestLocale(typedLocale);
 
   const session = await getServerSession();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const role = String((session?.user as any)?.role ?? "").toUpperCase();
+  const role = String(session?.user?.role ?? "").toUpperCase();
 
   if (role !== "ADMIN") {
     redirect(`/${locale}/`);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userEmail = (session?.user as any)?.email;
+  const userEmail = session?.user?.email;
   if (!userEmail) {
     redirect(`/${locale}/`);
   }

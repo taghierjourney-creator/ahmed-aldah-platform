@@ -6,6 +6,8 @@ import { createArticleAsAuthor } from "@/actions/editorial";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+type ArticleStatus = "PENDING" | "DRAFT" | "PUBLISHED";
+
 export default function CreateArticlePage() {
   const locale = useLocale();
   const [title, setTitle] = useState("");
@@ -13,7 +15,7 @@ export default function CreateArticlePage() {
   const [excerpt, setExcerpt] = useState("");
   const [coverImage, setCoverImage] = useState("");
   const [content, setContent] = useState("");
-  const [status, setStatus] = useState("DRAFT");
+  const [status, setStatus] = useState<ArticleStatus>("DRAFT");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,12 +26,11 @@ export default function CreateArticlePage() {
 
     try {
       // Call server action
-      // @ts-ignore Server Action
       await createArticleAsAuthor({ title, slug, excerpt, coverImage, content, locale, status });
       // simple redirect
       window.location.href = `/${locale}/admin`;
-    } catch (err: any) {
-      setError(err?.message || "Failed to save");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to save");
       setSaving(false);
     }
   }
@@ -68,7 +69,16 @@ export default function CreateArticlePage() {
 
           <div>
             <label className="block text-sm font-medium">الحالة</label>
-            <select value={status} onChange={(e) => setStatus(e.target.value)} className="mt-1 block rounded border p-2">
+            <select
+              value={status}
+              onChange={(e) => {
+                const nextStatus = e.target.value;
+                if (nextStatus === "DRAFT" || nextStatus === "PENDING" || nextStatus === "PUBLISHED") {
+                  setStatus(nextStatus);
+                }
+              }}
+              className="mt-1 block rounded border p-2"
+            >
               <option value="DRAFT">مسودة</option>
               <option value="PENDING">مراجعة</option>
               <option value="PUBLISHED">نشر</option>

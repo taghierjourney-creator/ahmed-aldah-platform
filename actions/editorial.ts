@@ -20,7 +20,7 @@ export async function createArticleAsAuthor(data: CreateEditorialInput) {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const role = String(session.user.role ?? "").toUpperCase();
-  const canPublish = Boolean((session.user as any)?.canPublish);
+  const canPublish = session.user.canPublish === true;
 
   if (!(role === "ADMIN" || canPublish === true)) {
     throw new Error("Insufficient permissions");

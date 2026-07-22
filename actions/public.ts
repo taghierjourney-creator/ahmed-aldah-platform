@@ -1,9 +1,10 @@
 "use server";
 
 import db from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 
 export async function getPublishedArticles(locale?: string) {
-  const where: any = {
+  const where: Prisma.ArticleWhereInput = {
     deletedAt: null,
     published: true,
     status: "PUBLISHED",
@@ -31,7 +32,7 @@ export async function getPublishedArticles(locale?: string) {
 }
 
 export async function getFeaturedArticle(locale?: string) {
-  const where: any = { deletedAt: null, published: true, status: "PUBLISHED" };
+  const where: Prisma.ArticleWhereInput = { deletedAt: null, published: true, status: "PUBLISHED" };
   if (locale) where.locale = locale;
 
   const article = await db.article.findFirst({

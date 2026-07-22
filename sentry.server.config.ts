@@ -31,10 +31,22 @@ function scrubObject(obj: Record<string, unknown>) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function beforeSend(event: any): any | null {
+type SentryEvent = {
+  user?: unknown;
+  tags?: unknown;
+  contexts?: unknown;
+  extra?: unknown;
+  request?: unknown;
+  breadcrumbs?: unknown[];
+};
+
+function isSentryEvent(value: unknown): value is SentryEvent {
+  return isRecord(value);
+}
+
+function beforeSend(event: SentryEvent): SentryEvent {
   try {
-    const ev = event as { user?: unknown; tags?: unknown; contexts?: unknown; extra?: unknown; request?: unknown; breadcrumbs?: unknown[] };
+    const ev = event;
     // redact user identifiers
     if (ev.user) {
       const user = ev.user as unknown as Record<string, unknown>;
@@ -66,7 +78,7 @@ function beforeSend(event: any): any | null {
     void e;
   }
 
-  return event as unknown;
+  return event;
 }
 
 if (isProd) {
@@ -80,9 +92,9 @@ if (isProd) {
   try {
     const maybe = Sentry as unknown as { addGlobalEventProcessor?: (fn: (ev: unknown) => unknown) => void; addEventProcessor?: (fn: (ev: unknown) => unknown) => void };
     if (typeof maybe.addGlobalEventProcessor === "function") {
-      maybe.addGlobalEventProcessor((event: unknown) => beforeSend(event));
+      maybe.addGlobalEventProcessor((event: unknown) => (isSentryEvent(event) ? beforeSend(event) : event));
     } else if (typeof maybe.addEventProcessor === "function") {
-      maybe.addEventProcessor((event: unknown) => beforeSend(event));
+      maybe.addEventProcessor((event: unknown) => (isSentryEvent(event) ? beforeSend(event) : event));
     }
   } catch (e) {
     void e;

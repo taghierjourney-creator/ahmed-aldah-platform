@@ -31,8 +31,7 @@ export default async function AdminCommentsPage({ params }: AdminCommentsPagePro
   const t = await getTranslations("CommentModeration");
 
   const session = await getServerSession();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const role = String((session?.user as any)?.role ?? "").toUpperCase();
+  const role = String(session?.user?.role ?? "").toUpperCase();
   const allowed = role === "ADMIN" || role === "MODERATOR";
 
   if (!allowed) {
