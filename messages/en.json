@@ -2,7 +2,41 @@
   "Home": {
     "title": "Ahmed Al-Dah Platform",
     "description": "Welcome to the knowledge hub.",
-    "localeLabel": "Current locale: {locale}"
+    "localeLabel": "Current locale: {locale}",
+    "hero": {
+      "eyebrow": "Ahmed Al-Dah Platform",
+      "title": "An Arabic knowledge platform for research, publishing, and consulting",
+      "subtitle": "An institutional space for Arabic knowledge, bringing rigorous research, specialized publishing, and consulting services into a trusted environment.",
+      "quote": "Ahmed Al-Dah Platform is an Arabic knowledge platform for research, publishing, and consulting, combining scientific publishing, knowledge archives, and consulting services in a professional environment designed to remain a knowledge reference for decades.",
+      "exploreArticles": "Explore Articles",
+      "research": "Research",
+      "searchPlaceholder": "Search articles, research, and books...",
+      "search": "Search"
+    },
+    "contentGrid": {
+      "ariaLabel": "Content sections",
+      "articles": "Latest Articles",
+      "analyses": "Analyses",
+      "books": "Books",
+      "translations": "Translations",
+      "lectures": "Lectures",
+      "research": "Research",
+      "readMore": "Read more"
+    }
+  },
+  "navigation": {
+    "brand": "Ahmed Al-Dah Platform",
+    "navigationLabel": "Main navigation",
+    "home": "Home",
+    "blog": "Blog",
+    "research": "Research",
+    "books": "Books",
+    "office": "Office",
+    "contact": "Contact",
+    "login": "Login",
+    "admin": "Admin",
+    "search": "Search",
+    "toggleMenu": "Toggle navigation menu"
   },
   "LocaleSwitcher": {
     "label": "Change language"
@@ -210,7 +244,8 @@
     "title": "Continue to your workspace",
     "description": "Use your organization account to continue securely.",
     "actions": {
-      "sendLoginLink": "Send sign-in link"
+      "sendLoginLink": "Send sign-in link",
+      "continueWithGoogle": "Continue with Google"
     },
     "states": {
       "sendingLink": "Sending sign-in link…",
@@ -221,6 +256,10 @@
       "emailPlaceholder": "name@example.com"
     },
     "support": "You will receive a secure link to continue to your workspace.",
+    "googleSignIn": {
+      "title": "Google sign-in",
+      "description": "Use your Google account to sign in and stay within the current locale route."
+    },
     "errors": {
       "authFailed": "We could not send your sign-in link. Please try again."
     },
@@ -244,6 +283,109 @@
       "eyebrow": "Operations overview",
       "title": "Monitor your secure workspace",
       "description": "Use this dashboard to keep track of active requests, privileged workflows, and guardrails."
+    },
+    "tabs": {
+      "dashboard": "Dashboard",
+      "articles": "Articles",
+      "research": "Research",
+      "books": "Books",
+      "users": "Users",
+      "settings": "Settings"
+    },
+    "welcome": "Welcome back",
+    "hello": "Hello, {name}",
+    "metrics": {
+      "articles": "Total Articles",
+      "research": "Total Research",
+      "books": "Total Books",
+      "users": "Total Users"
+    },
+    "dashboard": {
+      "summary": "Your administration workspace is ready for content management.",
+      "roleSuperAdmin": "God Mode: Full platform access",
+      "roleJournalist": "Journalist mode: Editorial access only",
+      "quickActions": "Quick actions",
+      "quickAction": {
+        "articles": "Create or update articles",
+        "articlesDescription": "Draft, edit, and publish content in one place.",
+        "research": "Manage academic research",
+        "researchDescription": "Review new studies and research workflows."
+      },
+      "identity": "Your profile",
+      "loggedAs": "Logged in as your own account",
+      "totalContent": "Content summary",
+      "articles": "Articles",
+      "books": "Books",
+      "administration": "Access level",
+      "fullAccess": "Full access granted",
+      "journalistAccess": "Journalist access granted"
+    },
+    "articles": {
+      "description": "Draft, format, and publish articles with editorial controls.",
+      "create": "New article",
+      "search": "Search articles...",
+      "table": {
+        "id": "Article ID",
+        "title": "Title",
+        "status": "Status",
+        "author": "Author",
+        "published": "Published",
+        "actions": "Actions"
+      }
+    },
+    "research": {
+      "description": "Manage academic research items with review workflows.",
+      "create": "New research item",
+      "search": "Search research...",
+      "table": {
+        "id": "Research ID",
+        "title": "Title",
+        "category": "Category",
+        "status": "Status",
+        "updated": "Updated",
+        "actions": "Actions"
+      }
+    },
+    "books": {
+      "description": "Upload and manage book publications from the editorial library.",
+      "create": "New book",
+      "search": "Search books...",
+      "table": {
+        "id": "Book ID",
+        "title": "Title",
+        "author": "Author",
+        "published": "Published",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+    "users": {
+      "description": "View all users and assign roles in a secure environment.",
+      "invite": "Invite user",
+      "search": "Search users...",
+      "table": {
+        "id": "User ID",
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+    "settings": {
+      "description": "Update site configuration and public platform metadata.",
+      "update": "Save settings",
+      "items": {
+        "siteTitle": "Site Title",
+        "supportEmail": "Support Email"
+      },
+      "value": "Value"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "remove": "Remove",
+      "openPortal": "Open client portal"
     },
     "navigation": {
       "overview": "Overview",
@@ -277,7 +419,104 @@
     },
     "actions": {
       "openPortal": "Open client portal"
+    },
+    "adminTabs": {
+      "dashboard": "Dashboard",
+      "articles": "Articles",
+      "research": "Research",
+      "books": "Books",
+      "users": "Users",
+      "settings": "Settings"
     }
+  },
+  "ConsultingSection": {
+    "eyebrow": "Consulting Office",
+    "title": "Do you need specialized consulting or research?",
+    "description": "We help organizations and researchers transform complex questions into actionable insights.",
+    "requestConsultation": "Request Consultation",
+    "contactUs": "Contact Us"
+  },
+  "PublicPages": {
+    "research": {
+      "metadata": {
+        "title": "Research & Publications",
+        "description": "Explore academic research and publications from Ahmed Al-Dah platform."
+      },
+      "eyebrow": "Scholarly Research",
+      "title": "Research & Publications",
+      "description": "Peer-reviewed research and scholarly publications exploring knowledge frontiers.",
+      "search": "Search research...",
+      "create": "Submit research",
+      "empty": "No research publications available yet."
+    },
+    "books": {
+      "metadata": {
+        "title": "Published Books",
+        "description": "Discover published books and monographs from our editorial collection."
+      },
+      "eyebrow": "Editorial Collection",
+      "title": "Published Books",
+      "description": "Books and monographs from our carefully curated editorial collection.",
+      "search": "Search books...",
+      "create": "Suggest book",
+      "empty": "No books published yet."
+    },
+    "lectures": {
+      "metadata": {
+        "title": "Lectures & Seminars",
+        "description": "Video lectures, seminars, and educational content from Ahmed Al-Dah."
+      },
+      "eyebrow": "Educational Content",
+      "title": "Lectures & Seminars",
+      "description": "Video lectures, seminars, and educational sessions on knowledge production.",
+      "search": "Search lectures...",
+      "create": "Propose lecture",
+      "empty": "No lectures available yet."
+    },
+    "translations": {
+      "metadata": {
+        "title": "Translations",
+        "description": "Curated translations of important works into Arabic."
+      },
+      "eyebrow": "Cross-Lingual Knowledge",
+      "title": "Translations",
+      "description": "Curated translations making global knowledge accessible to Arabic readers.",
+      "search": "Search translations...",
+      "create": "Suggest translation",
+      "empty": "No translations published yet."
+    },
+    "analyses": {
+      "metadata": {
+        "title": "Analyses & Commentary",
+        "description": "In-depth analyses and expert commentary on contemporary issues."
+      },
+      "eyebrow": "Expert Commentary",
+      "title": "Analyses & Commentary",
+      "description": "In-depth analyses and expert commentary on knowledge and society.",
+      "search": "Search analyses...",
+      "create": "Submit analysis",
+      "empty": "No analyses published yet."
+    },
+    "table": {
+      "id": "ID",
+      "title": "Title",
+      "author": "Author",
+      "category": "Category",
+      "date": "Date",
+      "status": "Status",
+      "actions": "Actions"
+    }
+  },
+  "Blog": {
+    "metadata": {
+      "title": "Knowledge Hub",
+      "description": "Explore the latest knowledge hub articles in your chosen language."
+    },
+    "eyebrow": "Knowledge Hub",
+    "title": "Latest Articles",
+    "description": "Discover the latest published articles for your locale.",
+    "search": "Search articles...",
+    "empty": "No published articles are available yet."
   },
   "Comments": {
     "title": "Comments",

@@ -2,7 +2,41 @@
   "Home": {
     "title": "Plateforme Ahmed Al-Dah",
     "description": "Bienvenue sur le pôle de connaissances.",
-    "localeLabel": "Langue actuelle : {locale}"
+    "localeLabel": "Langue actuelle : {locale}",
+    "hero": {
+      "eyebrow": "Plateforme Ahmed Al-Dah",
+      "title": "Plateforme francophone pour la recherche, la publication et les consultations",
+      "subtitle": "Un espace institutionnel pour les connaissances francophones, combinant recherche rigoureuse, publication spécialisée et services consultatifs dans un environnement de confiance.",
+      "quote": "La plateforme Ahmed Al-Dah est un pôle francophone de connaissances et de recherche, réunissant publication scientifique, archives de connaissances et services consultatifs dans un environnement professionnel, conçu pour rester une référence de connaissances pour les décennies à venir.",
+      "exploreArticles": "Explorer les articles",
+      "research": "Recherche",
+      "searchPlaceholder": "Rechercher dans les articles, recherches et livres...",
+      "search": "Rechercher"
+    },
+    "contentGrid": {
+      "ariaLabel": "Sections de contenu",
+      "articles": "Derniers articles",
+      "analyses": "Analyses",
+      "books": "Livres",
+      "translations": "Traductions",
+      "lectures": "Conférences",
+      "research": "Recherche",
+      "readMore": "Lire la suite"
+    }
+  },
+  "navigation": {
+    "brand": "Plateforme Ahmed Al-Dah",
+    "navigationLabel": "Navigation principale",
+    "home": "Accueil",
+    "blog": "Blog",
+    "research": "Recherche",
+    "books": "Livres",
+    "office": "Bureau",
+    "contact": "Contact",
+    "login": "Connexion",
+    "admin": "Admin",
+    "search": "Recherche",
+    "toggleMenu": "Basculer le menu de navigation"
   },
   "LocaleSwitcher": {
     "label": "Changer de langue"
@@ -210,7 +244,8 @@
     "title": "Continuer vers votre espace de travail",
     "description": "Utilisez votre compte d’organisation pour continuer en toute sécurité.",
     "actions": {
-      "sendLoginLink": "Envoyer le lien de connexion"
+      "sendLoginLink": "Envoyer le lien de connexion",
+      "continueWithGoogle": "Continuer avec Google"
     },
     "states": {
       "sendingLink": "Envoi du lien de connexion…",
@@ -221,6 +256,10 @@
       "emailPlaceholder": "prenom@exemple.com"
     },
     "support": "Vous recevrez un lien sécurisé pour accéder à votre espace.",
+    "googleSignIn": {
+      "title": "Connexion Google",
+      "description": "Utilisez votre compte Google pour vous connecter tout en restant sur la route de langue actuelle."
+    },
     "errors": {
       "authFailed": "Nous n’avons pas pu envoyer le lien de connexion. Veuillez réessayer."
     },
@@ -244,6 +283,109 @@
       "eyebrow": "Aperçu des opérations",
       "title": "Surveillez votre espace sécurisé",
       "description": "Utilisez ce tableau de bord pour suivre les demandes actives, les workflows sensibles et les garde-fous de sécurité."
+    },
+    "tabs": {
+      "dashboard": "Tableau",
+      "articles": "Articles",
+      "research": "Recherche",
+      "books": "Livres",
+      "users": "Utilisateurs",
+      "settings": "Paramètres"
+    },
+    "welcome": "Bon retour",
+    "hello": "Bonjour, {name}",
+    "metrics": {
+      "articles": "Total des articles",
+      "research": "Total des recherches",
+      "books": "Total des livres",
+      "users": "Total des utilisateurs"
+    },
+    "dashboard": {
+      "summary": "L’espace d’administration est prêt pour la gestion du contenu.",
+      "roleSuperAdmin": "Mode Super Admin : accès total à la plateforme",
+      "roleJournalist": "Mode journaliste : accès éditorial seulement",
+      "quickActions": "Actions rapides",
+      "quickAction": {
+        "articles": "Créer ou mettre à jour des articles",
+        "articlesDescription": "Rédigez, modifiez et publiez du contenu depuis un seul endroit.",
+        "research": "Gérer la recherche académique",
+        "researchDescription": "Revoir les nouvelles études et les workflows de recherche."
+      },
+      "identity": "Votre profil",
+      "loggedAs": "Connecté avec votre propre compte",
+      "totalContent": "Résumé du contenu",
+      "articles": "Articles",
+      "books": "Livres",
+      "administration": "Niveau d’accès",
+      "fullAccess": "Accès complet accordé",
+      "journalistAccess": "Accès journaliste accordé"
+    },
+    "articles": {
+      "description": "Rédigez, formatez et publiez des articles avec des contrôles éditoriaux.",
+      "create": "Nouvel article",
+      "search": "Rechercher des articles...",
+      "table": {
+        "id": "ID d’article",
+        "title": "Titre",
+        "status": "Statut",
+        "author": "Auteur",
+        "published": "Publié",
+        "actions": "Actions"
+      }
+    },
+    "research": {
+      "description": "Gérez des éléments de recherche académique avec des workflows de révision.",
+      "create": "Nouvelle recherche",
+      "search": "Rechercher des recherches...",
+      "table": {
+        "id": "ID de recherche",
+        "title": "Titre",
+        "category": "Catégorie",
+        "status": "Statut",
+        "updated": "Mis à jour",
+        "actions": "Actions"
+      }
+    },
+    "books": {
+      "description": "Téléchargez et gérez les publications de livres depuis la bibliothèque éditoriale.",
+      "create": "Nouveau livre",
+      "search": "Rechercher des livres...",
+      "table": {
+        "id": "ID du livre",
+        "title": "Titre",
+        "author": "Auteur",
+        "published": "Publié",
+        "status": "Statut",
+        "actions": "Actions"
+      }
+    },
+    "users": {
+      "description": "Consultez tous les utilisateurs et attribuez des rôles dans un environnement sécurisé.",
+      "invite": "Inviter un utilisateur",
+      "search": "Rechercher des utilisateurs...",
+      "table": {
+        "id": "ID utilisateur",
+        "name": "Nom",
+        "email": "Email",
+        "role": "Rôle",
+        "status": "Statut",
+        "actions": "Actions"
+      }
+    },
+    "settings": {
+      "description": "Mettez à jour la configuration du site et les informations publiques de la plateforme.",
+      "update": "Enregistrer les paramètres",
+      "items": {
+        "siteTitle": "Titre du site",
+        "supportEmail": "Email de support"
+      },
+      "value": "Valeur"
+    },
+    "actions": {
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "remove": "Retirer",
+      "openPortal": "Ouvrir le portail client"
     },
     "navigation": {
       "overview": "Vue d’ensemble",
@@ -373,5 +515,94 @@
       "dismiss": "Fermer",
       "logout": "Quitter maintenant"
     }
+  },
+  "ConsultingSection": {
+    "eyebrow": "Bureau de consultation",
+    "title": "Besoin d'une consultation ou d'une étude spécialisée ?",
+    "description": "Nous aidons les organisations et les chercheurs à transformer des questions complexes en perspectives actionnables.",
+    "requestConsultation": "Demander une consultation",
+    "contactUs": "Nous contacter"
+  },
+  "PublicPages": {
+    "research": {
+      "metadata": {
+        "title": "Recherches et publications",
+        "description": "Explorez les recherches académiques et les publications de la plateforme Ahmed Al-Dah."
+      },
+      "eyebrow": "Recherche académique",
+      "title": "Recherches et publications",
+      "description": "Des recherches examinées par les pairs et des publications académiques qui explorent les horizons de la connaissance.",
+      "search": "Rechercher dans les recherches...",
+      "create": "Soumettre une recherche",
+      "empty": "Aucune recherche publiée pour le moment."
+    },
+    "books": {
+      "metadata": {
+        "title": "Livres publiés",
+        "description": "Découvrez les livres et les publications de notre collection éditoriale curatée."
+      },
+      "eyebrow": "Collection éditoriale",
+      "title": "Livres publiés",
+      "description": "Livres et publications de notre collection éditoriale soigneusement sélectionnée.",
+      "search": "Rechercher des livres...",
+      "create": "Proposer un livre",
+      "empty": "Aucun livre publié pour le moment."
+    },
+    "lectures": {
+      "metadata": {
+        "title": "Conférences et séminaires",
+        "description": "Conférences vidéo et séminaires ainsi que contenu éducatif d'Ahmed Al-Dah."
+      },
+      "eyebrow": "Contenu éducatif",
+      "title": "Conférences et séminaires",
+      "description": "Conférences vidéo et séminaires ainsi que sessions éducatives sur la production de connaissances.",
+      "search": "Rechercher des conférences...",
+      "create": "Proposer une conférence",
+      "empty": "Aucune conférence disponible pour le moment."
+    },
+    "translations": {
+      "metadata": {
+        "title": "Traductions",
+        "description": "Traductions sélectionnées d'ouvrages importants en langue arabe."
+      },
+      "eyebrow": "Connaître au-delà des langues",
+      "title": "Traductions",
+      "description": "Traductions sélectionnées qui rendent les connaissances mondiales accessibles aux lecteurs arabophones.",
+      "search": "Rechercher des traductions...",
+      "create": "Proposer une traduction",
+      "empty": "Aucune traduction publiée pour le moment."
+    },
+    "analyses": {
+      "metadata": {
+        "title": "Analyses et commentaires",
+        "description": "Analyses approfondies et commentaires d'experts sur les enjeux contemporains."
+      },
+      "eyebrow": "Commentaires d'experts",
+      "title": "Analyses et commentaires",
+      "description": "Analyses approfondies et commentaires d'experts sur la connaissance et la société.",
+      "search": "Rechercher dans les analyses...",
+      "create": "Soumettre une analyse",
+      "empty": "Aucune analyse publiée pour le moment."
+    },
+    "table": {
+      "id": "ID",
+      "title": "Titre",
+      "author": "Auteur",
+      "category": "Catégorie",
+      "date": "Date",
+      "status": "Statut",
+      "actions": "Actions"
+    }
+  },
+  "Blog": {
+    "metadata": {
+      "title": "Plateforme de connaissances",
+      "description": "Découvrez les derniers articles de la plateforme de connaissances dans votre langue."
+    },
+    "eyebrow": "Plateforme de connaissances",
+    "title": "Derniers articles",
+    "description": "Découvrez les derniers articles publiés dans votre langue.",
+    "search": "Rechercher des articles...",
+    "empty": "Aucun article publié pour le moment."
   }
 }

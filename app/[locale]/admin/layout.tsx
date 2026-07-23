@@ -24,8 +24,9 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
     redirect(`/${locale}/login`);
   }
 
-  if (role !== "ADMIN") {
-    redirect(`/${locale}/portal`);
+  const allowedRoles = ["ADMIN", "SUPER_ADMIN", "JOURNALIST"];
+  if (!allowedRoles.includes(role)) {
+    redirect(`/${locale}`);
   }
 
   return <>{children}</>;

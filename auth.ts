@@ -2,7 +2,7 @@ import { Auth } from "@auth/core";
 import type { AuthConfig } from "@auth/core";
 import type { Session, User } from "@auth/core/types";
 import type { AdapterUser } from "@auth/core/adapters";
-import GitHub from "@auth/core/providers/github";
+import Google from "@auth/core/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import db from "./lib/db";
 
@@ -17,9 +17,9 @@ const SESSION_IDLE_TIMEOUT = 30 * 60; // 30 minutes idle timeout for admin/clien
 export const authOptions: AuthConfig = {
   adapter: PrismaAdapter(db),
   providers: [
-    GitHub({
-      clientId: process.env.GITHUB_ID || "",
-      clientSecret: process.env.GITHUB_SECRET || "",
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
   ],
   session: {

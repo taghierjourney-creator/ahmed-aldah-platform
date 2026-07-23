@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import createMiddleware from "next-intl/middleware";
 
-export const runtime = "experimental-edge";
+import { routing } from "@/i18n/routing";
+
+const handleI18nRouting = createMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -47,9 +50,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  return handleI18nRouting(request);
 }
 
 export const config = {
-  matcher: ["/:locale(en|fr|ar)/:path*"],
+  matcher: ["/", "/(ar|en|fr)/:path*", "/((?!api|_next|_vercel|.*\\..*).*)"],
 };

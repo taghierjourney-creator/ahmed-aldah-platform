@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-
+import { LocaleSwitcher } from "@/components/locale-switcher";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 import LoginForm from "@/components/LoginForm";
-import { verifyLoginToken } from "@/actions/auth";
-import { getServerSession } from "@/lib/auth";
 import type { Locale } from "@/lib/locale";
-
-export const dynamic = "force-dynamic";
 
 type LoginPageProps = {
   params: Promise<{ locale: string }>;
-  searchParams: { token?: string };
 };
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: LoginPageProps): Promise<Metadata> {
   const { locale } = await params;
@@ -24,68 +21,64 @@ export async function generateMetadata({ params }: LoginPageProps): Promise<Meta
   };
 }
 
-export default async function LoginPage({ params, searchParams }: LoginPageProps) {
+export default async function LoginPage({ params }: LoginPageProps) {
   const { locale } = await params;
   const typedLocale = locale as Locale;
 
   setRequestLocale(typedLocale);
-
-  const session = await getServerSession();
-  const role = String(session?.user?.role ?? "").toUpperCase();
-
-  if (session?.user) {
-    if (role === "ADMIN") {
-      if (session.mfaVerifiedAt) {
-        redirect(`/${locale}/admin`);
-      }
-
-      redirect(`/${locale}/admin/mfa-verify?callbackUrl=/${locale}/admin`);
-    }
-
-    redirect(`/${locale}/portal`);
-  }
-
-  let loginFormError: string | null = null;
-  const token = searchParams?.token;
-
-  if (token) {
-    try {
-      const redirectUrl = await verifyLoginToken(token, typedLocale);
-      redirect(redirectUrl);
-    } catch {
-      loginFormError = "Unable to verify this login link. Please request a new sign-in link.";
-    }
-  }
-
   const t = await getTranslations("Login");
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_60%)] px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-6xl flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
-        <section className="max-w-2xl space-y-6">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-foreground/60">
-            {t("eyebrow")}
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-            {t("hero.title")}
-          </h1>
-          <p className="max-w-xl text-lg leading-8 text-foreground/70">
-            {t("hero.description")}
-          </p>
-          <div className="rounded-[2rem] border border-foreground/10 bg-card/70 p-6 shadow-sm">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-foreground/60">
-              {t("security.title")}
-            </p>
-            <ul className="mt-4 space-y-3 text-sm leading-7 text-foreground/70">
-              <li>• {t("security.items.mfa")}</li>
-              <li>• {t("security.items.session")}</li>
-              <li>• {t("security.items.access")}</li>
-            </ul>
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.12),_transparent_40%)] px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-10">
+        <header className="flex flex-col gap-6 rounded-[2rem] border border-foreground/10 bg-card/90 p-8 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-foreground/60">{t("eyebrow")}</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{t("hero.title")}</h1>
+            <p className="mt-4 max-w-2xl text-base leading-8 text-foreground/70">{t("hero.description")}</p>
           </div>
-        </section>
+          <div className="flex items-center justify-between gap-3 sm:justify-end">
+            <LocaleSwitcher />
+          </div>
+        </header>
 
-        <div className="w-full max-w-md">
-          <LoginForm locale={typedLocale} serverError={loginFormError} />
+        <div className="grid gap-8 lg:grid-cols-[0.95fr_0.9fr]">
+          <section className="rounded-[2rem] border border-foreground/10 bg-card/90 p-8 shadow-sm">
+            <div className="space-y-6">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-foreground/60">{t("title")}</p>
+                <h2 className="mt-3 text-3xl font-semibold text-foreground">{t("description")}</h2>
+              </div>
+              <div className="space-y-4 text-sm leading-7 text-foreground/75">
+                <p>{t("support")}</p>
+                <p>{t("security.title")}</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-[1.75rem] bg-background/80 p-6">
+                  <p className="text-sm font-semibold text-foreground/70">{t("security.items.mfa")}</p>
+                </div>
+                <div className="rounded-[1.75rem] bg-background/80 p-6">
+                  <p className="text-sm font-semibold text-foreground/70">{t("security.items.session")}</p>
+                </div>
+                <div className="rounded-[1.75rem] bg-background/80 p-6">
+                  <p className="text-sm font-semibold text-foreground/70">{t("security.items.access")}</p>
+                </div>
+              </div>
+              <div className="space-y-4 rounded-[1.75rem] border border-foreground/10 bg-background/80 p-6">
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-foreground/60">{t("googleSignIn.title")}</p>
+                <p className="text-sm text-foreground/70">{t("googleSignIn.description")}</p>
+                <GoogleSignInButton callbackUrl={`/${typedLocale}`} label={t("actions.continueWithGoogle")} />
+              </div>
+            </div>
+          </section>
+
+          <aside className="rounded-[2rem] border border-foreground/10 bg-card/90 p-8 shadow-sm">
+            <h2 className="text-xl font-semibold text-foreground">{t("title")}</h2>
+            <p className="mt-3 text-sm leading-7 text-foreground/70">{t("description")}</p>
+            <div className="mt-8">
+              <LoginForm locale={typedLocale} />
+            </div>
+          </aside>
         </div>
       </div>
     </main>
